@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Environments and secrets
+.env
+.venv/
+venv/
+ENV/
+
+# Local runtime state
+*.sqlite
+*.sqlite3
+*.db
+data/runtime/*
+!data/runtime/.gitkeep
+
+# Trace exports can contain sensitive case details; keep curated fixtures only.
+traces/*
+!traces/.gitkeep
+!traces/README.md
+
+# Local-only raw research notes
+/docs/AI-Business-Operations-Orchestrator.md
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

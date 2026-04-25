@@ -1,0 +1,72 @@
+name: default-commercial-intake-playbook
+version: "0.1.0"
+approval_policy: on_high_risk
+rules:
+  - id: liability_cap_above_standard
+    description: Route contracts with nonstandard liability exposure to legal.
+    when:
+      clause_type: limitation_of_liability
+      comparator: exceeds
+      threshold: 1x_fees
+    severity: high
+    route: legal
+    approval_required: true
+    required_evidence:
+      - contract_span
+    task_template: Summarize liability deviation and required legal decision.
+
+  - id: missing_dpa_for_regulated_data
+    description: Route missing data protection artifacts to security review.
+    when:
+      artifact: dpa
+      status: missing
+      data_classification:
+        - regulated
+        - sensitive
+    severity: high
+    route: security
+    approval_required: true
+    required_evidence:
+      - questionnaire_span
+      - contract_span
+    task_template: Request DPA or document security exception.
+
+  - id: unsupported_integration
+    description: Route unsupported integrations to implementation review.
+    when:
+      field: requested_integrations
+      contains_any:
+        - custom_sap_plugin
+        - legacy_mainframe_connector
+    severity: medium
+    route: implementation
+    approval_required: true
+    required_evidence:
+      - notes_span
+    task_template: Validate integration feasibility and implementation owner.
+
+  - id: discount_above_threshold
+    description: Route unusual commercial concessions to finance review.
+    when:
+      field: discount_percent
+      comparator: greater_than
+      threshold: 35
+    severity: medium
+    route: finance
+    approval_required: true
+    required_evidence:
+      - order_form_span
+    task_template: Review pricing exception and approval authority.
+
+  - id: clean_standard_package
+    description: Allow clean complete packages to proceed without specialist review.
+    when:
+      package_complete: true
+      standard_terms: true
+      supported_integration: true
+    severity: low
+    route: auto_approve
+    approval_required: false
+    required_evidence:
+      - intake_summary
+    task_template: Generate standard onboarding brief and task plan.
