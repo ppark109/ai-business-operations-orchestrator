@@ -2,9 +2,11 @@ name: ci
 
 on:
   pull_request:
+  workflow_dispatch:
   push:
     branches:
       - main
+      - "codex/**"
 
 jobs:
   test:
@@ -17,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: pip
 
       - name: Install dependencies
@@ -30,10 +32,10 @@ jobs:
         run: python -m pytest
 
       - name: Deterministic eval
-        run: |
-          python -m pytest -q tests/test_routing.py tests/test_playbook.py
-          python scripts/run_evals.py
-        continue-on-error: false
+        run: python scripts/run_evals.py
+
+      - name: Demo reset smoke
+        run: python scripts/demo_reset.py
 
       - name: Docker build
         run: docker build -t ai-flowops .
