@@ -13,8 +13,8 @@
       <tbody>
         {% for approval in approvals %}
         <tr>
-          <td><a href="/approvals/{{ approval.approval_id }}">{{ approval.approval_id }}</a></td>
-          <td><a href="/cases/{{ approval.case_id }}">{{ approval.case_id }}</a></td>
+          <td><a href="/approvals/{{ approval.approval_id }}{% if admin_mode %}?admin_token={{ admin_token }}{% endif %}">{{ approval.approval_id }}</a></td>
+          <td><a href="/cases/{{ approval.case_id }}{% if admin_mode %}?admin_token={{ admin_token }}{% endif %}">{{ approval.case_id }}</a></td>
           <td>{{ approval.original_route }}</td>
           <td>{{ approval.final_route or "-" }}</td>
           <td>{{ approval.status }}</td>

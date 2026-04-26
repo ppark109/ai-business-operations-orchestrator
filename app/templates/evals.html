@@ -2,9 +2,13 @@
 {% block content %}
 <section class="page-head">
   <h1>Eval results</h1>
+  {% if admin_mode %}
   <form method="post" action="/evals/run">
+    <input type="hidden" name="admin_token" value="{{ admin_token }}" />
+    <input type="hidden" name="csrf_token" value="{{ csrf_token_for('POST', '/evals/run') }}" />
     <button type="submit">Run held-out eval</button>
   </form>
+  {% endif %}
 </section>
 
 <section class="card">

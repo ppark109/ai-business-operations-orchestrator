@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     app_name: str = "AI FlowOps"
     app_version: str = "0.1.0"
     database_path: str = "data/runtime/app.sqlite3"
+    admin_token: str | None = None
     enable_api_agents: bool = False
 
     @property

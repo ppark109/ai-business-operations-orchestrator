@@ -7,7 +7,7 @@
 <section class="grid">
   <div class="card">
     <h2>Case</h2>
-    <p><a href="/cases/{{ case.case_id }}">Open case {{ case.case_id }}</a></p>
+    <p><a href="/cases/{{ case.case_id }}{% if admin_mode %}?admin_token={{ admin_token }}{% endif %}">Open case {{ case.case_id }}</a></p>
     <p><strong>Original route:</strong> {{ approval.original_route }}</p>
     <p><strong>Current final route:</strong> {{ approval.final_route or "-" }}</p>
     <p><strong>Status:</strong> {{ approval.status }}</p>
@@ -41,14 +41,19 @@
 
 <section class="card">
   <h2>Decision actions</h2>
+  {% if admin_mode and approval.status == "pending" %}
   <div class="actions">
     <form method="post" action="/approvals/{{ approval.approval_id }}/approve">
+      <input type="hidden" name="admin_token" value="{{ admin_token }}" />
+      <input type="hidden" name="csrf_token" value="{{ csrf_token_for('POST', '/approvals/' ~ approval.approval_id ~ '/approve') }}" />
       <input type="text" name="reviewer" placeholder="Reviewer" />
       <input type="text" name="comments" placeholder="Optional notes" />
       <button type="submit">Approve</button>
     </form>
 
     <form method="post" action="/approvals/{{ approval.approval_id }}/request-info">
+      <input type="hidden" name="admin_token" value="{{ admin_token }}" />
+      <input type="hidden" name="csrf_token" value="{{ csrf_token_for('POST', '/approvals/' ~ approval.approval_id ~ '/request-info') }}" />
       <input type="text" name="reviewer" placeholder="Reviewer" required />
       <input type="text" name="comments" placeholder="Missing info request" required />
       <button type="submit">Request Info</button>
@@ -57,6 +62,8 @@
 
   <div class="actions">
     <form method="post" action="/approvals/{{ approval.approval_id }}/override">
+      <input type="hidden" name="admin_token" value="{{ admin_token }}" />
+      <input type="hidden" name="csrf_token" value="{{ csrf_token_for('POST', '/approvals/' ~ approval.approval_id ~ '/override') }}" />
       <select name="route">
         {% for route_name in ROUTES %}
         <option value="{{ route_name }}">{{ route_name }}</option>
@@ -68,10 +75,15 @@
     </form>
 
     <form method="post" action="/approvals/{{ approval.approval_id }}/reject">
+      <input type="hidden" name="admin_token" value="{{ admin_token }}" />
+      <input type="hidden" name="csrf_token" value="{{ csrf_token_for('POST', '/approvals/' ~ approval.approval_id ~ '/reject') }}" />
       <input type="text" name="reviewer" placeholder="Reviewer" required />
       <input type="text" name="comments" placeholder="Rejection reason" required />
       <button type="submit">Reject</button>
     </form>
   </div>
+  {% else %}
+  <p>Decision actions require active admin mode and a pending approval.</p>
+  {% endif %}
 </section>
 {% endblock %}

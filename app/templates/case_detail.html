@@ -94,7 +94,7 @@
   <p><strong>Status:</strong> {{ case.approval.status }}</p>
   <p><strong>Reviewer:</strong> {{ case.approval.reviewer or "-" }}</p>
   <p><strong>Comments:</strong> {{ case.approval.comments or "-" }}</p>
-  <p><a href="/approvals/{{ case.approval.approval_id }}">Open approval queue item</a></p>
+  <p><a href="/approvals/{{ case.approval.approval_id }}{% if admin_mode %}?admin_token={{ admin_token }}{% endif %}">Open approval queue item</a></p>
 </section>
 {% endif %}
 {% endblock %}
