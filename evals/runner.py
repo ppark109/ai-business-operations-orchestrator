@@ -21,6 +21,7 @@ def run_eval(store: WorkflowStore, folder: Path, output: Path | None = None):
     approval_pass = 0
     grounding_pass = 0
     brief_pass = 0
+    total_pass = 0
 
     # Simple deterministic workflow: route and save each seeded held-out case.
     for seed in cases:
@@ -52,6 +53,7 @@ def run_eval(store: WorkflowStore, folder: Path, output: Path | None = None):
         approval_pass += int(is_approval_ok)
         grounding_pass += int(is_grounding_ok)
         brief_pass += int(is_brief_ok)
+        total_pass += int(is_route_ok and is_approval_ok and is_grounding_ok and is_brief_ok and is_trace_ok)
 
         eval_row = EvalResult(
             case_id=seed.case_id,
@@ -85,10 +87,12 @@ def run_eval(store: WorkflowStore, folder: Path, output: Path | None = None):
         "approval_pass": approval_pass,
         "grounding_pass": grounding_pass,
         "brief_pass": brief_pass,
+        "total_pass": total_pass,
         "route_accuracy": route_pass / max(total, 1),
         "approval_accuracy": approval_pass / max(total, 1),
         "grounding_accuracy": grounding_pass / max(total, 1),
         "brief_accuracy": brief_pass / max(total, 1),
+        "total_accuracy": total_pass / max(total, 1),
         "rows": rows,
     }
     if output is not None:

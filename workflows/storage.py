@@ -379,8 +379,10 @@ class WorkflowStore:
 
     def get_kpi_summary(self) -> dict[str, object]:
         kpis = self.get_kpis()
-        total = len(kpis)
-        if total == 0:
+        case_rows = self.conn.execute("SELECT case_id, status FROM cases").fetchall()
+        total_cases = len(case_rows)
+        status_by_case = {row["case_id"]: row["status"] for row in case_rows}
+        if total_cases == 0:
             return {
                 "total_cases": 0,
                 "straight_through_count": 0,
@@ -402,16 +404,26 @@ class WorkflowStore:
         for row in kpis:
             route_dist[row.final_route] = route_dist.get(row.final_route, 0) + 1
         straight = sum(1 for row in kpis if row.straight_through)
+        escalations = sum(1 for row in kpis if row.approval_required)
         overrides = sum(1 for row in kpis if row.reviewer_override)
-        avg_tasks = sum(row.generated_task_count for row in kpis) / total
+        completed_kpis = [
+            row
+            for row in kpis
+            if status_by_case.get(row.case_id) in {"approved", "completed"}
+        ]
+        avg_tasks = (
+            sum(row.generated_task_count for row in completed_kpis) / len(completed_kpis)
+            if completed_kpis
+            else 0.0
+        )
         approvals_rows = self.list_approvals()
         pending_approvals = len([item for item in approvals_rows if item.status == "pending"])
         rejected_count = len([item for item in approvals_rows if item.status == "rejected"])
         request_info_count = len([item for item in approvals_rows if item.status == "request_info"])
         return {
-            "total_cases": total,
+            "total_cases": total_cases,
             "straight_through_count": straight,
-            "escalation_count": total - straight,
+            "escalation_count": escalations,
             "override_count": overrides,
             "rejected_count": rejected_count,
             "request_info_count": request_info_count,
@@ -548,14 +560,22 @@ class WorkflowStore:
             "approval_pass": 0,
             "grounding_pass": 0,
             "brief_pass": 0,
+            "total_pass": 0,
         }
         for row in rows:
             payload = json.loads(row["result_payload"])
             summary["total"] += 1
-            summary["route_pass"] += int(bool(payload.get("route_pass")))
-            summary["approval_pass"] += int(bool(payload.get("approval_pass")))
-            summary["grounding_pass"] += int(bool(payload.get("grounding_pass")))
-            summary["brief_pass"] += int(bool(payload.get("brief_completeness_pass")))
+            route_pass = bool(payload.get("route_pass"))
+            approval_pass = bool(payload.get("approval_pass"))
+            grounding_pass = bool(payload.get("grounding_pass"))
+            brief_pass = bool(payload.get("brief_completeness_pass"))
+            summary["route_pass"] += int(route_pass)
+            summary["approval_pass"] += int(approval_pass)
+            summary["grounding_pass"] += int(grounding_pass)
+            summary["brief_pass"] += int(brief_pass)
+            summary["total_pass"] += int(
+                route_pass and approval_pass and grounding_pass and brief_pass
+            )
         total = float(summary["total"])
         if total == 0:
             return {
@@ -569,7 +589,7 @@ class WorkflowStore:
                 )
             }
         return {
-            "total_rate": 1.0,
+            "total_rate": summary["total_pass"] / total,
             "route_rate": summary["route_pass"] / total,
             "approval_rate": summary["approval_pass"] / total,
             "grounding_rate": summary["grounding_pass"] / total,
