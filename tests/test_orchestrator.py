@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from workflows.orchestrator import WorkflowOrchestrator
 from workflows.seeding import load_case_files
 
@@ -41,6 +43,8 @@ def test_approval_actions_are_reflected(tmp_path: Path) -> None:
         )
         assert resumed.approval is not None
         assert resumed.approval.status == "approved"
+        with pytest.raises(ValueError, match="terminal state"):
+            orchestrator.run_case(case_id)
 
         # request route override
         case_id = "seed-implementation-001"
@@ -55,5 +59,59 @@ def test_approval_actions_are_reflected(tmp_path: Path) -> None:
         )
         assert resumed2.approval is not None
         assert resumed2.approval.final_route == "security"
+        with pytest.raises(ValueError, match="cannot be acted on again"):
+            orchestrator.apply_approval(
+                result2.approval_id,
+                "reject",
+                reviewer="lead",
+                comments="second action should fail",
+            )
+    finally:
+        orchestrator.close()
+
+
+def test_rejected_approval_cannot_be_reopened_by_second_action(tmp_path: Path) -> None:
+    orchestrator = WorkflowOrchestrator(db_path=tmp_path / "closed.sqlite3")
+    try:
+        orchestrator.seed("data/seed/cases", overwrite=True)
+        result = orchestrator.run_case("seed-legal-001")
+        assert result.approval_id
+        rejected = orchestrator.apply_approval(
+            result.approval_id,
+            "reject",
+            reviewer="qa",
+            comments="reject for test",
+        )
+        assert rejected.approval is not None
+        assert rejected.approval.status == "rejected"
+
+        with pytest.raises(ValueError, match="cannot be acted on again"):
+            orchestrator.apply_approval(
+                result.approval_id,
+                "approve",
+                reviewer="qa",
+                comments="second action should fail",
+            )
+    finally:
+        orchestrator.close()
+
+
+def test_request_info_stays_in_active_approval_queue(tmp_path: Path) -> None:
+    orchestrator = WorkflowOrchestrator(db_path=tmp_path / "request-info.sqlite3")
+    try:
+        orchestrator.seed("data/seed/cases", overwrite=True)
+        result = orchestrator.run_case("seed-legal-001")
+        assert result.approval_id
+        state = orchestrator.apply_approval(
+            result.approval_id,
+            "request_info",
+            reviewer="qa",
+            request_info="Need updated DPA.",
+        )
+        assert state.approval is not None
+        assert state.approval.status == "request_info"
+
+        active_ids = {approval.approval_id for approval in orchestrator.list_approvals()}
+        assert result.approval_id in active_ids
     finally:
         orchestrator.close()

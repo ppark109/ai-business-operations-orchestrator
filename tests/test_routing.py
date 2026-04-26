@@ -38,7 +38,7 @@ def test_high_severity_case_escalates_to_legal() -> None:
     assert needs_approval is True
 
 
-def test_requested_specialist_route_is_preserved() -> None:
+def test_requested_route_cannot_override_deterministic_route() -> None:
     route, needs_approval, _ = choose_route(
         [
             Finding(
@@ -53,9 +53,8 @@ def test_requested_specialist_route_is_preserved() -> None:
                 source_agent="x",
             )
         ],
-        requested_route="finance",
         confidence=0.90,
     )
 
-    assert route == "finance"
-    assert needs_approval is False
+    assert route == "security"
+    assert needs_approval is True

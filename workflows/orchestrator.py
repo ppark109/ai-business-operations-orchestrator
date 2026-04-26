@@ -76,7 +76,13 @@ class WorkflowOrchestrator:
     def seed(self, folder: Path | str, *, overwrite: bool = False) -> dict[str, int]:
         return seed_cases(self.store, folder, overwrite=overwrite)
 
-    def run_case(self, case_id: str, requested_route: Route | None = None) -> WorkflowRunResult:
+    def run_case(self, case_id: str) -> WorkflowRunResult:
+        status = self.store.get_status(case_id)
+        if status in {"approved", "rejected", "completed"}:
+            raise ValueError(
+                f"Case {case_id} is in terminal state '{status}' and cannot be rerun."
+            )
+
         intake = self.store.get_intake(case_id)
         traces: list[TraceRecord] = []
 
@@ -117,7 +123,6 @@ class WorkflowOrchestrator:
             findings=all_findings,
             confidence=recommendation.confidence,
             missing_required_info=bool(normalized.missing_info),
-            requested_route=requested_route,
             has_conflicting_evidence=has_conflicting_findings(all_findings),
         )
 
@@ -277,6 +282,10 @@ class WorkflowOrchestrator:
         approval = self.store.get_approval_by_id(approval_id)
         if approval is None:
             raise KeyError(approval_id)
+        if approval.status != "pending":
+            raise ValueError(
+                f"Approval {approval_id} is '{approval.status}' and cannot be acted on again."
+            )
 
         case_id = approval.case_id
         routing = self.store.get_routing_decision(case_id)

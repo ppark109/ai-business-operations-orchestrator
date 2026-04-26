@@ -44,7 +44,6 @@ def choose_route(
     findings: Sequence[Finding] | Sequence[str],
     confidence: float = 1.0,
     missing_required_info: bool = False,
-    requested_route: Route | None = None,
     has_conflicting_evidence: bool = False,
 ) -> tuple[Route, bool, list[Route]]:
     normalized = []
@@ -65,18 +64,6 @@ def choose_route(
             )
         else:
             normalized.append(item)
-
-    if requested_route in ESCALATION_ROUTES:
-        return (
-            requested_route,
-            approval_required(
-                _max_severity_from_findings(normalized),
-                confidence,
-                missing_required_info,
-                has_conflicting_evidence,
-            ),
-            [],
-        )
 
     if not normalized:
         return (

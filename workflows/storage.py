@@ -333,7 +333,11 @@ class WorkflowStore:
         return [Approval.model_validate(json.loads(row["approval_payload"])) for row in rows]
 
     def list_pending_approvals(self) -> list[Approval]:
-        return [a for a in self.list_approvals("pending") if a.status == "pending"]
+        return [
+            approval
+            for approval in self.list_approvals()
+            if approval.status in {"pending", "request_info"}
+        ]
 
     def save_brief(self, case_id: str, brief: GeneratedBrief) -> None:
         self.conn.execute(
