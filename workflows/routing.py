@@ -72,9 +72,7 @@ def choose_route(
             [],
         )
 
-    sorted_findings = sorted(
-        normalized, key=lambda item: _severity_rank(item.severity), reverse=True
-    )
+    sorted_findings = sorted(normalized, key=_finding_priority, reverse=True)
     top = sorted_findings[0]
     chosen = top.route
 
@@ -116,3 +114,11 @@ def _max_severity_from_findings(findings: Sequence[Finding]) -> Severity:
 
 def _severity_rank(severity: Severity) -> int:
     return {"low": 1, "medium": 2, "high": 3, "critical": 4}[severity]
+
+
+def _finding_priority(finding: Finding) -> tuple[int, int, str]:
+    return (
+        _severity_rank(finding.severity),
+        ROUTE_SEVERITY[finding.route],
+        finding.rule_id,
+    )

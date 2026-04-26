@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 from schemas.case import Finding, RoutingDecision
+from workflows.routing import ROUTE_SEVERITY
+
+
+def _severity_rank(severity: str) -> int:
+    return {"low": 1, "medium": 2, "high": 3, "critical": 4}[severity]
 
 
 class RoutingRecommendationAgent:
@@ -19,7 +24,7 @@ class RoutingRecommendationAgent:
 
         sorted_findings = sorted(
             findings,
-            key=lambda item: (item.severity, item.route),
+            key=lambda item: (_severity_rank(item.severity), ROUTE_SEVERITY[item.route], item.rule_id),
             reverse=True,
         )
         top = sorted_findings[0]
