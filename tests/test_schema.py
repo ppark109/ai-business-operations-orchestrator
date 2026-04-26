@@ -72,3 +72,10 @@ def test_eval_and_kpi_validate_minimum_fields() -> None:
         generated_task_count=1,
     )
     assert kpi.generated_task_count == 1
+
+
+def test_env_example_matches_settings_names() -> None:
+    env_example = Path(".env.example").read_text(encoding="utf-8")
+
+    assert "DATABASE_PATH=" in env_example
+    assert "DATABASE_URL=" not in env_example
