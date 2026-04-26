@@ -8,6 +8,8 @@ from schemas.case import EvalResult, IntakePackage
 from workflows.seeding import load_case_files
 from workflows.storage import WorkflowStore
 
+RUNTIME_EVAL_OUTPUT = Path("data/runtime/evals/latest.json")
+
 
 def run_eval(store: WorkflowStore, folder: Path, output: Path | None = None):
     cases = load_case_files(folder)
@@ -23,8 +25,7 @@ def run_eval(store: WorkflowStore, folder: Path, output: Path | None = None):
     # Simple deterministic workflow: route and save each seeded held-out case.
     for seed in cases:
         # Use store directly to avoid HTTP dependency.
-        if not _exists_case(store, seed.case_id):
-            store.upsert_case(seed, status="draft")
+        store.upsert_case(seed, status="draft")
 
         from workflows.orchestrator import WorkflowOrchestrator
 
@@ -94,14 +95,6 @@ def run_eval(store: WorkflowStore, folder: Path, output: Path | None = None):
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     return summary
-
-
-def _exists_case(store: WorkflowStore, case_id: str) -> bool:
-    try:
-        store.get_status(case_id)
-        return True
-    except KeyError:
-        return False
 
 
 def _case_text(payload: IntakePackage) -> str:

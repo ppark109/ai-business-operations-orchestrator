@@ -12,7 +12,7 @@ def _ensure_project_root() -> None:
 
 def main() -> None:
     _ensure_project_root()
-    from evals.runner import run_eval
+    from evals.runner import RUNTIME_EVAL_OUTPUT, run_eval
     from workflows.orchestrator import WorkflowOrchestrator
 
     orchestrator = WorkflowOrchestrator()
@@ -20,7 +20,7 @@ def main() -> None:
         result = run_eval(
             orchestrator.store,
             folder=Path("data/held_out/cases"),
-            output=Path("evals/baselines/latest.json"),
+            output=RUNTIME_EVAL_OUTPUT,
         )
         print(f"run_id={result['run_id']} route_accuracy={result['route_accuracy']:.2f}")
         print(f"approval_accuracy={result['approval_accuracy']:.2f}")

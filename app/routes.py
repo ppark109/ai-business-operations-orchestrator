@@ -412,12 +412,12 @@ def run_evals(
     x_admin_token: Annotated[str | None, Header(alias="X-Admin-Token")] = None,
     authorization: Annotated[str | None, Header()] = None,
 ) -> dict[str, object]:
-    from evals.runner import run_eval
+    from evals.runner import RUNTIME_EVAL_OUTPUT, run_eval
 
     _require_api_admin(request, x_admin_token, authorization)
     orchestrator = _orchestrator(request)
     result = run_eval(
-        orchestrator.store, Path("data/held_out/cases"), Path("evals/baselines/latest.json")
+        orchestrator.store, Path("data/held_out/cases"), RUNTIME_EVAL_OUTPUT
     )
     return result
 
@@ -674,11 +674,11 @@ def run_evals_form(
     admin_token: str = Form(...),  # noqa: B008
     csrf_token: str = Form(...),  # noqa: B008
 ) -> str:
-    from evals.runner import run_eval
+    from evals.runner import RUNTIME_EVAL_OUTPUT, run_eval
 
     _require_form_admin(request, admin_token, csrf_token)
     orchestrator = _orchestrator(request)
-    run_eval(orchestrator.store, Path("data/held_out/cases"), Path("evals/baselines/latest.json"))
+    run_eval(orchestrator.store, Path("data/held_out/cases"), RUNTIME_EVAL_OUTPUT)
     return _redirect_response(f"/evals?admin_token={admin_token}")
 
 
