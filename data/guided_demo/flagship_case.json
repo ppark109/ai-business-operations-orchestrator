@@ -118,9 +118,153 @@
       "downstream_use": "Creates Implementation condition for integration discovery."
     }
   ],
+  "department_packets": [
+    {
+      "department": "Legal",
+      "packet_status": "review_completed",
+      "action_needed": "Determine whether state contract terms are acceptable for qualification or require negotiation conditions.",
+      "key_information": [
+        "Liability cap is three times annual fees.",
+        "Broad indemnity language applies to third-party portal operations claims.",
+        "Insurance and audit obligations must be confirmed before submission."
+      ],
+      "ai_generated_task": "Confirm negotiation position for liability cap, indemnity, insurance, and audit-right language.",
+      "evidence_ids": [
+        "ev-liability-cap",
+        "ev-indemnity"
+      ]
+    },
+    {
+      "department": "Security",
+      "packet_status": "review_completed",
+      "action_needed": "Confirm whether regulated data handling can be accepted before proposal submission.",
+      "key_information": [
+        "The portal will process regulated citizen benefits data.",
+        "The DPA is required but missing from the packet.",
+        "Data residency answer must be confirmed before bid commitment."
+      ],
+      "ai_generated_task": "Request the DPA and residency clarification, then document security conditions for BD/Ops.",
+      "evidence_ids": [
+        "ev-regulated-data",
+        "ev-missing-dpa"
+      ]
+    },
+    {
+      "department": "Finance",
+      "packet_status": "review_completed",
+      "action_needed": "Assess margin feasibility and commercial exposure before proposal resources are committed.",
+      "key_information": [
+        "Estimated contract value is $4.8M.",
+        "Cost proposal must include fixed implementation fees and support tiers.",
+        "Service credits may create margin exposure if delivery slips."
+      ],
+      "ai_generated_task": "Build preliminary cost model and flag pricing conditions for BD/Ops.",
+      "evidence_ids": [
+        "ev-value",
+        "ev-cost-proposal"
+      ]
+    },
+    {
+      "department": "Implementation",
+      "packet_status": "review_completed",
+      "action_needed": "Confirm whether delivery can support the requested scope and timeline.",
+      "key_information": [
+        "Production launch is requested within 12 weeks of award.",
+        "Legacy eligibility mainframe integration is required in phase one.",
+        "Staffing must be reserved before final bid/no-bid approval."
+      ],
+      "ai_generated_task": "Confirm staffing plan and integration discovery assumptions for the qualification decision.",
+      "evidence_ids": [
+        "ev-timeline",
+        "ev-legacy-integration"
+      ]
+    }
+  ],
+  "specialist_conclusions": [
+    {
+      "department": "Legal",
+      "reviewer_role": "Legal Reviewer",
+      "status": "approved_with_conditions",
+      "decision": "Acceptable for qualification if liability and indemnity language are negotiated before final bid.",
+      "note": "No immediate no-bid blocker, but liability cap and broad indemnity should be treated as proposal conditions.",
+      "condition_type": "condition",
+      "result": "Legal packet complete with negotiation condition.",
+      "evidence_ids": [
+        "ev-liability-cap",
+        "ev-indemnity"
+      ]
+    },
+    {
+      "department": "Security",
+      "reviewer_role": "Security Reviewer",
+      "status": "needs_info",
+      "decision": "Proceed only after the agency provides the DPA and confirms data residency requirements.",
+      "note": "Regulated citizen data is supportable, but the missing DPA and residency answer must be resolved before submission.",
+      "condition_type": "condition",
+      "result": "Security packet returned with required follow-up.",
+      "evidence_ids": [
+        "ev-regulated-data",
+        "ev-missing-dpa"
+      ]
+    },
+    {
+      "department": "Finance",
+      "reviewer_role": "Finance Reviewer",
+      "status": "approved_with_conditions",
+      "decision": "Margin appears feasible if implementation staffing estimate and service-credit exposure are controlled.",
+      "note": "The $4.8M value supports pursuit, but finance needs a preliminary model before final bid authorization.",
+      "condition_type": "condition",
+      "result": "Finance packet complete with cost-model condition.",
+      "evidence_ids": [
+        "ev-value",
+        "ev-cost-proposal"
+      ]
+    },
+    {
+      "department": "Implementation",
+      "reviewer_role": "Delivery Lead",
+      "status": "approved_with_conditions",
+      "decision": "Delivery is feasible if two engineers are reserved and legacy integration discovery starts before award.",
+      "note": "The 12-week launch is tight but manageable if discovery and staffing are treated as bid conditions.",
+      "condition_type": "condition",
+      "result": "Implementation packet complete with staffing and discovery conditions.",
+      "evidence_ids": [
+        "ev-timeline",
+        "ev-legacy-integration"
+      ]
+    }
+  ],
+  "ai_synthesis": {
+    "recommendation": "Proceed to qualification with conditions",
+    "summary": "The opportunity is strategically attractive and commercially meaningful, but BD/Ops should not authorize full proposal work until the specialist conditions are assigned and tracked.",
+    "blockers": [],
+    "conditions": [
+      "Legal must define the negotiation position for liability and indemnity.",
+      "Security must obtain the missing DPA and data residency answer.",
+      "Finance must complete the preliminary cost and service-credit model.",
+      "Implementation must reserve staffing and begin legacy integration discovery."
+    ],
+    "unresolved_questions": [
+      "Will the agency accept negotiated liability and indemnity language?",
+      "What data residency commitments are required for regulated citizen data?",
+      "Does the staffing model preserve target margin after service-credit exposure?"
+    ],
+    "evidence_ids": [
+      "ev-liability-cap",
+      "ev-indemnity",
+      "ev-regulated-data",
+      "ev-missing-dpa",
+      "ev-value",
+      "ev-cost-proposal",
+      "ev-timeline",
+      "ev-legacy-integration"
+    ]
+  },
   "expected_bd_ops_decision": {
     "decision": "Proceed to qualification with conditions",
     "ai_synthesis_recommendation": "Proceed only if Legal confirms acceptable liability language, Security obtains the DPA and residency answer, Finance validates margin, and Implementation confirms staffing for the 12-week launch.",
+    "decision_owner": "BD/Ops",
+    "owner_note": "BD/Ops accepts the AI synthesis as a qualification recommendation and assigns conditions before the final bid/no-bid meeting.",
     "approved_next_steps": [
       "Assign proposal owner",
       "Confirm insurance and liability negotiation position",
@@ -128,6 +272,16 @@
       "Build preliminary cost model",
       "Confirm staffing plan for the 12-week launch",
       "Schedule final bid/no-bid meeting"
+    ],
+    "evidence_ids": [
+      "ev-liability-cap",
+      "ev-indemnity",
+      "ev-regulated-data",
+      "ev-missing-dpa",
+      "ev-value",
+      "ev-cost-proposal",
+      "ev-timeline",
+      "ev-legacy-integration"
     ]
   }
 }
