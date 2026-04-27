@@ -1,0 +1,133 @@
+{
+  "case_id": "demo-gov-benefits-001",
+  "title": "State Benefits Portal Modernization RFP",
+  "workflow_type": "Government Contract Intake",
+  "input_type": "RFP / contract opportunity",
+  "customer_agency": "State Department of Human Services",
+  "account_name": "Benefits Modernization Program",
+  "estimated_value_usd": 4800000,
+  "response_deadline": "2026-05-14",
+  "status": "completed",
+  "ai_recommendation": "Conditional bid",
+  "final_decision": "Proceed to qualification with conditions",
+  "decision_owner": "BD/Ops",
+  "risk_level": "medium",
+  "primary_route": "legal",
+  "supporting_routes": [
+    "security",
+    "finance",
+    "implementation"
+  ],
+  "summary": "A state agency RFP is strategically attractive, but the response requires coordinated legal, security, finance, and implementation review before BD/Ops can commit proposal resources.",
+  "specialist_lanes": [
+    {
+      "department": "Legal",
+      "purpose": "Review contract exposure before proposal commitment.",
+      "expected_risks": [
+        "indemnity",
+        "liability cap",
+        "insurance",
+        "audit rights"
+      ]
+    },
+    {
+      "department": "Security",
+      "purpose": "Review regulated citizen data, residency, and DPA requirements.",
+      "expected_risks": [
+        "regulated citizen data",
+        "missing DPA",
+        "data residency",
+        "security questionnaire"
+      ]
+    },
+    {
+      "department": "Finance",
+      "purpose": "Review pricing, margin, cost proposal, and service-credit exposure.",
+      "expected_risks": [
+        "$4.8M value",
+        "cost proposal",
+        "discount/margin pressure",
+        "SLA credits"
+      ]
+    },
+    {
+      "department": "Implementation",
+      "purpose": "Review delivery feasibility before bid/no-bid commitment.",
+      "expected_risks": [
+        "12-week deadline",
+        "legacy integration",
+        "staffing constraints"
+      ]
+    }
+  ],
+  "expected_evidence": [
+    {
+      "evidence_id": "ev-liability-cap",
+      "source_document": "contract",
+      "source_phrase": "liability cap equal to three times annual fees",
+      "extracted_fact": "Liability cap exceeds standard threshold.",
+      "downstream_use": "Triggers Legal review for nonstandard liability exposure."
+    },
+    {
+      "evidence_id": "ev-indemnity",
+      "source_document": "contract",
+      "source_phrase": "vendor will indemnify the agency for third-party claims arising from portal operations",
+      "extracted_fact": "Broad indemnity language is present.",
+      "downstream_use": "Triggers Legal review for negotiation conditions."
+    },
+    {
+      "evidence_id": "ev-regulated-data",
+      "source_document": "security_questionnaire",
+      "source_phrase": "regulated citizen benefits data including eligibility records and household income",
+      "extracted_fact": "The workflow processes regulated citizen data.",
+      "downstream_use": "Triggers Security review and DPA/residency conditions."
+    },
+    {
+      "evidence_id": "ev-missing-dpa",
+      "source_document": "security_questionnaire",
+      "source_phrase": "data processing addendum is required but not attached",
+      "extracted_fact": "Required DPA is missing from the packet.",
+      "downstream_use": "Creates Security condition before submission."
+    },
+    {
+      "evidence_id": "ev-cost-proposal",
+      "source_document": "order_form",
+      "source_phrase": "cost proposal must include fixed implementation fees, optional support tiers, and service credits",
+      "extracted_fact": "Cost proposal and service-credit exposure require finance review.",
+      "downstream_use": "Triggers Finance review for margin and credit exposure."
+    },
+    {
+      "evidence_id": "ev-value",
+      "source_document": "order_form",
+      "source_phrase": "estimated contract value is $4.8M over the initial term",
+      "extracted_fact": "Opportunity value is above finance review threshold.",
+      "downstream_use": "Adds Finance review and BD/Ops strategic fit signal."
+    },
+    {
+      "evidence_id": "ev-timeline",
+      "source_document": "implementation_notes",
+      "source_phrase": "production launch is requested within 12 weeks of award",
+      "extracted_fact": "Implementation timeline is compressed.",
+      "downstream_use": "Triggers Implementation review for staffing feasibility."
+    },
+    {
+      "evidence_id": "ev-legacy-integration",
+      "source_document": "implementation_notes",
+      "source_phrase": "legacy eligibility mainframe integration is required during phase one",
+      "extracted_fact": "Legacy integration is a delivery dependency.",
+      "downstream_use": "Creates Implementation condition for integration discovery."
+    }
+  ],
+  "expected_bd_ops_decision": {
+    "decision": "Proceed to qualification with conditions",
+    "ai_synthesis_recommendation": "Proceed only if Legal confirms acceptable liability language, Security obtains the DPA and residency answer, Finance validates margin, and Implementation confirms staffing for the 12-week launch.",
+    "approved_next_steps": [
+      "Assign proposal owner",
+      "Confirm insurance and liability negotiation position",
+      "Request missing DPA and data residency answers",
+      "Build preliminary cost model",
+      "Confirm staffing plan for the 12-week launch",
+      "Schedule final bid/no-bid meeting"
+    ]
+  }
+}
