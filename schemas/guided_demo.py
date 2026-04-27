@@ -54,6 +54,23 @@ class DemoAiSynthesis(BaseModel):
     evidence_ids: list[str] = Field(min_length=1)
 
 
+class DemoEvidenceMapRow(BaseModel):
+    evidence_id: str = Field(min_length=1)
+    source_phrase: str = Field(min_length=1)
+    extracted_fact: str = Field(min_length=1)
+    ai_finding: str = Field(min_length=1)
+    specialist_packet: str = Field(min_length=1)
+    specialist_conclusion: str = Field(min_length=1)
+    bd_ops_use: str = Field(min_length=1)
+
+
+class DemoAuditEvent(BaseModel):
+    timestamp: str = Field(min_length=1)
+    event_type: str = Field(min_length=1)
+    actor: str = Field(min_length=1)
+    summary: str = Field(min_length=1)
+
+
 class DemoBdOpsDecision(BaseModel):
     decision: str = Field(min_length=1)
     ai_synthesis_recommendation: str = Field(min_length=1)
@@ -85,6 +102,8 @@ class DemoCaseSpec(BaseModel):
     department_packets: list[DemoDepartmentPacket] = Field(default_factory=list)
     specialist_conclusions: list[DemoSpecialistConclusion] = Field(default_factory=list)
     ai_synthesis: DemoAiSynthesis | None = None
+    evidence_map: list[DemoEvidenceMapRow] = Field(default_factory=list)
+    audit_events: list[DemoAuditEvent] = Field(default_factory=list)
     expected_bd_ops_decision: DemoBdOpsDecision
 
     @property
@@ -99,5 +118,7 @@ class DemoCaseSpec(BaseModel):
             refs.update(conclusion.evidence_ids)
         if self.ai_synthesis:
             refs.update(self.ai_synthesis.evidence_ids)
+        for row in self.evidence_map:
+            refs.add(row.evidence_id)
         refs.update(self.expected_bd_ops_decision.evidence_ids)
         return refs

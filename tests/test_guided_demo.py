@@ -34,6 +34,10 @@ def test_guided_demo_evidence_references_are_resolvable() -> None:
 
     assert case.referenced_evidence_ids()
     assert case.referenced_evidence_ids() <= evidence_ids
+    assert len(case.evidence_map) == len(case.expected_evidence)
+    assert {row.evidence_id for row in case.evidence_map} == evidence_ids
+    assert case.audit_events
+    assert case.audit_events[-1].event_type == "kpi.updated"
 
 
 def test_guided_demo_public_pages_render() -> None:

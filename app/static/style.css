@@ -471,6 +471,61 @@ mark {
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
 }
 
+.evidence-map {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.evidence-map article {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.85rem;
+}
+
+.evidence-map dl {
+  display: grid;
+  gap: 0.35rem 0.7rem;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  margin: 0.7rem 0 0;
+}
+
+.evidence-map dt {
+  color: #475569;
+  font-weight: 700;
+}
+
+.evidence-map dd {
+  margin: 0;
+}
+
+.audit-log {
+  border-left: 3px solid #0f766e;
+  display: grid;
+  gap: 0.7rem;
+  margin-left: 0.4rem;
+  padding-left: 0.9rem;
+}
+
+.audit-log article {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.7rem;
+}
+
+.audit-log time,
+.audit-log span {
+  color: #64748b;
+  display: inline-block;
+  font-size: 0.82rem;
+  margin-right: 0.55rem;
+}
+
+.audit-log p {
+  margin: 0.35rem 0 0;
+}
+
 @media (max-width: 980px) {
   .demo-hero,
   .case-gallery,

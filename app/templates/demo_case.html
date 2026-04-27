@@ -99,6 +99,23 @@
           </table>
         </div>
       </section>
+      <section class="card">
+        <h2>Evidence Map</h2>
+        <div class="evidence-map">
+          {% for row in demo_case.evidence_map %}
+            <article>
+              <strong>{{ row.extracted_fact }}</strong>
+              <p><mark>{{ row.source_phrase }}</mark></p>
+              <dl>
+                <dt>AI finding</dt><dd>{{ row.ai_finding }}</dd>
+                <dt>Specialist packet</dt><dd>{{ row.specialist_packet }}</dd>
+                <dt>Specialist conclusion</dt><dd>{{ row.specialist_conclusion }}</dd>
+                <dt>BD/Ops use</dt><dd>{{ row.bd_ops_use }}</dd>
+              </dl>
+            </article>
+          {% endfor %}
+        </div>
+      </section>
 
     {% elif active_step == "routing" %}
       <div class="step-head">
@@ -186,6 +203,19 @@
             <li>{{ step }}</li>
           {% endfor %}
         </ol>
+      </section>
+      <section class="card">
+        <h2>Audit Trail</h2>
+        <div class="audit-log">
+          {% for event in demo_case.audit_events %}
+            <article>
+              <time>{{ event.timestamp }}</time>
+              <strong>{{ event.event_type }}</strong>
+              <span>{{ event.actor }}</span>
+              <p>{{ event.summary }}</p>
+            </article>
+          {% endfor %}
+        </div>
       </section>
 
     {% else %}

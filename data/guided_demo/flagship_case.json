@@ -260,6 +260,148 @@
       "ev-legacy-integration"
     ]
   },
+  "evidence_map": [
+    {
+      "evidence_id": "ev-liability-cap",
+      "source_phrase": "liability cap equal to three times annual fees",
+      "extracted_fact": "Liability cap exceeds standard threshold.",
+      "ai_finding": "Legal exposure requires review before bid commitment.",
+      "specialist_packet": "Legal packet asks reviewer to define negotiation position.",
+      "specialist_conclusion": "Legal approves qualification with liability negotiation condition.",
+      "bd_ops_use": "BD/Ops proceeds only if proposal owner tracks liability condition."
+    },
+    {
+      "evidence_id": "ev-indemnity",
+      "source_phrase": "vendor will indemnify the agency for third-party claims arising from portal operations",
+      "extracted_fact": "Broad indemnity language is present.",
+      "ai_finding": "Indemnity language creates legal negotiation risk.",
+      "specialist_packet": "Legal packet includes indemnity as a required review item.",
+      "specialist_conclusion": "Legal requires negotiation position before final bid.",
+      "bd_ops_use": "BD/Ops includes legal negotiation as an approved next step."
+    },
+    {
+      "evidence_id": "ev-regulated-data",
+      "source_phrase": "regulated citizen benefits data including eligibility records and household income",
+      "extracted_fact": "The workflow processes regulated citizen data.",
+      "ai_finding": "Regulated data handling requires security review.",
+      "specialist_packet": "Security packet asks reviewer to confirm supportability.",
+      "specialist_conclusion": "Security says supportable if privacy artifacts are completed.",
+      "bd_ops_use": "BD/Ops keeps pursuit active but conditions it on security follow-up."
+    },
+    {
+      "evidence_id": "ev-missing-dpa",
+      "source_phrase": "data processing addendum is required but not attached",
+      "extracted_fact": "Required DPA is missing from the packet.",
+      "ai_finding": "Missing DPA creates unresolved security/privacy requirement.",
+      "specialist_packet": "Security packet requests DPA and data residency clarification.",
+      "specialist_conclusion": "Security returns needs-info condition.",
+      "bd_ops_use": "BD/Ops assigns missing DPA as a blocking follow-up before final bid."
+    },
+    {
+      "evidence_id": "ev-value",
+      "source_phrase": "estimated contract value is $4.8M over the initial term",
+      "extracted_fact": "Opportunity value is above finance review threshold.",
+      "ai_finding": "High-value opportunity supports strategic pursuit but needs commercial review.",
+      "specialist_packet": "Finance packet asks reviewer to assess margin feasibility.",
+      "specialist_conclusion": "Finance says pursuit is feasible if model validates margin.",
+      "bd_ops_use": "BD/Ops weighs value as a positive qualification signal."
+    },
+    {
+      "evidence_id": "ev-cost-proposal",
+      "source_phrase": "cost proposal must include fixed implementation fees, optional support tiers, and service credits",
+      "extracted_fact": "Cost proposal and service-credit exposure require finance review.",
+      "ai_finding": "Commercial terms require finance model before proposal commitment.",
+      "specialist_packet": "Finance packet asks for cost model and service-credit exposure review.",
+      "specialist_conclusion": "Finance requires preliminary cost model.",
+      "bd_ops_use": "BD/Ops assigns cost model before final bid/no-bid meeting."
+    },
+    {
+      "evidence_id": "ev-timeline",
+      "source_phrase": "production launch is requested within 12 weeks of award",
+      "extracted_fact": "Implementation timeline is compressed.",
+      "ai_finding": "Delivery feasibility requires implementation review.",
+      "specialist_packet": "Implementation packet asks delivery lead to confirm staffing.",
+      "specialist_conclusion": "Delivery lead says feasible with two engineers reserved.",
+      "bd_ops_use": "BD/Ops proceeds only if staffing is reserved before proposal work scales."
+    },
+    {
+      "evidence_id": "ev-legacy-integration",
+      "source_phrase": "legacy eligibility mainframe integration is required during phase one",
+      "extracted_fact": "Legacy integration is a delivery dependency.",
+      "ai_finding": "Legacy integration creates delivery discovery risk.",
+      "specialist_packet": "Implementation packet requests integration discovery assumptions.",
+      "specialist_conclusion": "Implementation requires early discovery before award.",
+      "bd_ops_use": "BD/Ops adds integration discovery to approved next steps."
+    }
+  ],
+  "audit_events": [
+    {
+      "timestamp": "10:14 AM",
+      "event_type": "document.received",
+      "actor": "Ingestion Layer",
+      "summary": "RFP, draft terms, pricing, implementation notes, and security questionnaire received."
+    },
+    {
+      "timestamp": "10:16 AM",
+      "event_type": "extraction.completed",
+      "actor": "AI Decision Engine",
+      "summary": "Structured facts and evidence phrases extracted from source documents."
+    },
+    {
+      "timestamp": "10:17 AM",
+      "event_type": "ai.decision.created",
+      "actor": "AI Decision Engine",
+      "summary": "Conditional bid recommended with Legal as primary route and three supporting review lanes."
+    },
+    {
+      "timestamp": "10:18 AM",
+      "event_type": "packets.created",
+      "actor": "Workflow Engine",
+      "summary": "Legal, Security, Finance, and Implementation packets created from evidence-backed findings."
+    },
+    {
+      "timestamp": "10:32 AM",
+      "event_type": "specialist.reviewed",
+      "actor": "Legal Reviewer",
+      "summary": "Legal approved qualification with liability and indemnity negotiation conditions."
+    },
+    {
+      "timestamp": "10:41 AM",
+      "event_type": "specialist.reviewed",
+      "actor": "Security Reviewer",
+      "summary": "Security requested DPA and data residency follow-up before final bid."
+    },
+    {
+      "timestamp": "10:47 AM",
+      "event_type": "specialist.reviewed",
+      "actor": "Delivery Lead",
+      "summary": "Implementation approved with staffing and legacy integration discovery conditions."
+    },
+    {
+      "timestamp": "10:49 AM",
+      "event_type": "specialist.reviewed",
+      "actor": "Finance Reviewer",
+      "summary": "Finance approved qualification with preliminary margin model condition."
+    },
+    {
+      "timestamp": "10:51 AM",
+      "event_type": "ai.synthesis.created",
+      "actor": "AI Decision Engine",
+      "summary": "Specialist conclusions synthesized into BD/Ops decision packet."
+    },
+    {
+      "timestamp": "10:52 AM",
+      "event_type": "bdops.decision.logged",
+      "actor": "BD/Ops",
+      "summary": "Proceed to qualification with conditions logged as final business decision."
+    },
+    {
+      "timestamp": "10:53 AM",
+      "event_type": "kpi.updated",
+      "actor": "Dashboard Layer",
+      "summary": "Demo KPIs updated for routed case, review completion, and human-modified recommendation."
+    }
+  ],
   "expected_bd_ops_decision": {
     "decision": "Proceed to qualification with conditions",
     "ai_synthesis_recommendation": "Proceed only if Legal confirms acceptable liability language, Security obtains the DPA and residency answer, Finance validates margin, and Implementation confirms staffing for the 12-week launch.",

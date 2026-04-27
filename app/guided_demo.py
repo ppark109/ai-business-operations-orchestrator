@@ -73,6 +73,10 @@ def validate_guided_demo_case(case: DemoCaseSpec) -> None:
     conclusion_departments = {item.department for item in case.specialist_conclusions}
     if packet_departments != conclusion_departments:
         raise ValueError("Guided-demo packet departments and conclusion departments must match.")
+    if not case.evidence_map:
+        raise ValueError("Guided-demo case must include an evidence map.")
+    if not case.audit_events:
+        raise ValueError("Guided-demo case must include audit events.")
 
 
 def guided_demo_view_model(active_step: str = "documents", active_tab: str = "source") -> dict[str, object]:
