@@ -136,3 +136,42 @@ def test_codex_review_agent_regrounds_paraphrased_quote_to_source_sentence() -> 
         == "The discount is above the standard approval threshold and must be reviewed by finance before booking."
     )
     assert findings[0].evidence[0].quote == evidence[0].quote
+
+
+def test_codex_review_agent_regrounds_quote_when_source_document_uses_alias() -> None:
+    case = {item.case_id: item for item in load_case_files(Path("data/held_out/cases"))}[
+        "heldout-security-001"
+    ]
+    parsed = AIReviewResult.model_validate(
+        {
+            "evidence": [
+                {
+                    "source_document_type": "security",
+                    "locator": "security:1",
+                    "quote": "The required DPA is missing from the packet.",
+                    "normalized_fact": "The required DPA is missing from the packet.",
+                    "confidence": 0.88,
+                }
+            ],
+            "findings": [
+                {
+                    "rule_id": "missing_dpa_for_regulated_data",
+                    "finding_type": "ai_review",
+                    "severity": "high",
+                    "route": "security",
+                    "summary": "Missing DPA requires security review.",
+                    "evidence_quotes": ["The required DPA is missing from the packet."],
+                    "confidence": 0.86,
+                }
+            ],
+            "risk_signals": ["missing_dpa_for_regulated_data"],
+            "rationale": "",
+        }
+    )
+    agent = CodexReviewAgent(model="gpt-5.5", runner=_Runner(parsed))
+
+    evidence, findings, _ = agent.run(case)
+
+    assert evidence[0].source_document_type == "security_questionnaire"
+    assert evidence[0].quote == "The DPA is missing and security artifacts are not provided."
+    assert findings[0].evidence[0].quote == evidence[0].quote

@@ -9,6 +9,8 @@ def test_guided_demo_case_has_specialist_packets_and_bd_ops_decision() -> None:
     validate_guided_demo_case(case)
 
     assert case.case_id == "demo-gov-benefits-001"
+    assert len(case.source_documents) == 5
+    assert all(document.content for document in case.source_documents)
     assert case.primary_route == "legal"
     assert case.decision_owner == "BD/Ops"
     assert case.expected_bd_ops_decision.decision_owner == "BD/Ops"
@@ -31,6 +33,7 @@ def test_guided_demo_case_has_specialist_packets_and_bd_ops_decision() -> None:
 def test_guided_demo_evidence_references_are_resolvable() -> None:
     case = load_guided_demo_case()
     evidence_ids = set(case.evidence_by_id)
+    documents_by_type = {document.document_type: document for document in case.source_documents}
 
     assert case.referenced_evidence_ids()
     assert case.referenced_evidence_ids() <= evidence_ids
@@ -38,6 +41,10 @@ def test_guided_demo_evidence_references_are_resolvable() -> None:
     assert {row.evidence_id for row in case.evidence_map} == evidence_ids
     assert case.audit_events
     assert case.audit_events[-1].event_type == "kpi.updated"
+    for evidence in case.expected_evidence:
+        document = documents_by_type[evidence.source_document]
+        assert document.content is not None
+        assert evidence.source_phrase in document.content
 
 
 def test_guided_demo_public_pages_render() -> None:

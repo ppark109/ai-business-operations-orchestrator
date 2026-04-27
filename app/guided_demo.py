@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from schemas.case import DocumentRef
 from schemas.guided_demo import DemoCaseSpec
 
 GUIDED_DEMO_CASE_PATH = Path("data/guided_demo/flagship_case.json")
@@ -60,7 +61,9 @@ GUIDED_DEMO_STEPS = [
 
 
 def load_guided_demo_case(path: Path = GUIDED_DEMO_CASE_PATH) -> DemoCaseSpec:
-    return DemoCaseSpec.model_validate(json.loads(path.read_text(encoding="utf-8")))
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    raw["source_documents"] = _hydrate_source_documents(raw.get("source_documents", []), path)
+    return DemoCaseSpec.model_validate(raw)
 
 
 def validate_guided_demo_case(case: DemoCaseSpec) -> None:
@@ -77,6 +80,46 @@ def validate_guided_demo_case(case: DemoCaseSpec) -> None:
         raise ValueError("Guided-demo case must include an evidence map.")
     if not case.audit_events:
         raise ValueError("Guided-demo case must include audit events.")
+    for evidence in case.expected_evidence:
+        document = next(
+            (
+                item
+                for item in case.source_documents
+                if item.document_type == evidence.source_document
+            ),
+            None,
+        )
+        if document is None or document.content is None:
+            raise ValueError(f"Missing guided-demo source document: {evidence.source_document}")
+        if evidence.source_phrase not in document.content:
+            raise ValueError(f"Evidence phrase missing from source document: {evidence.evidence_id}")
+
+
+def _hydrate_source_documents(documents: list[dict[str, object]], case_path: Path) -> list[dict[str, object]]:
+    hydrated_documents = []
+    for item in documents:
+        document = DocumentRef.model_validate(item)
+        if document.path is None:
+            hydrated_documents.append(document.model_dump())
+            continue
+        doc_path = _resolve_demo_document_path(document.path, case_path)
+        hydrated_documents.append(
+            document.model_copy(update={"content": doc_path.read_text(encoding="utf-8")}).model_dump()
+        )
+    return hydrated_documents
+
+
+def _resolve_demo_document_path(path: str, case_path: Path) -> Path:
+    candidate = Path(path)
+    if not candidate.is_absolute():
+        candidate = case_path.parent / candidate
+    resolved = candidate.resolve()
+    data_root = Path("data").resolve()
+    if not resolved.is_relative_to(data_root):
+        raise ValueError(f"Guided-demo source document must be under data/: {path}")
+    if not resolved.is_file():
+        raise FileNotFoundError(path)
+    return resolved
 
 
 def guided_demo_view_model(active_step: str = "documents", active_tab: str = "source") -> dict[str, object]:
@@ -121,15 +164,21 @@ def _document_previews(case: DemoCaseSpec) -> list[dict[str, object]]:
         "implementation_notes": "Implementation Notes",
         "security_questionnaire": "Security Questionnaire",
     }
+    source_order = [document.document_type for document in case.source_documents]
+    for doc_type in by_document:
+        if doc_type not in source_order:
+            source_order.append(doc_type)
+    by_doc_type = {document.document_type: document for document in case.source_documents}
     return [
         {
             "document_type": doc_type,
             "title": titles.get(doc_type, doc_type.replace("_", " ").title()),
             "page_label": f"Page {index} of 5",
             "summary": _document_summary(doc_type, case),
-            "highlights": phrases,
+            "content": by_doc_type.get(doc_type).content if doc_type in by_doc_type else "",
+            "highlights": by_document.get(doc_type, []),
         }
-        for index, (doc_type, phrases) in enumerate(by_document.items(), start=1)
+        for index, doc_type in enumerate(source_order, start=1)
     ]
 
 

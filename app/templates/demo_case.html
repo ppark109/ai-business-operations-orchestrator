@@ -35,10 +35,17 @@
               <div class="pdf-meta">{{ doc.page_label }}</div>
               <h2>{{ doc.title }}</h2>
               <p>{{ doc.summary }}</p>
+              {% if doc.content %}
+                <pre class="document-content">{{ doc.content }}</pre>
+              {% endif %}
               <h3>Highlighted evidence</h3>
-              {% for phrase in doc.highlights %}
-                <p><mark>{{ phrase }}</mark></p>
-              {% endfor %}
+              {% if doc.highlights %}
+                {% for phrase in doc.highlights %}
+                  <p><mark>{{ phrase }}</mark></p>
+                {% endfor %}
+              {% else %}
+                <p>No routing trigger in this document; it establishes intake context.</p>
+              {% endif %}
             </article>
           {% endfor %}
         </div>

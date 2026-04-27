@@ -19,6 +19,38 @@
     "implementation"
   ],
   "summary": "A state agency RFP is strategically attractive, but the response requires coordinated legal, security, finance, and implementation review before BD/Ops can commit proposal resources.",
+  "source_documents": [
+    {
+      "document_id": "demo-gov-benefits-001-intake",
+      "document_type": "intake_email",
+      "source_name": "Account team intake email",
+      "path": "documents/demo-gov-benefits-001/intake_email.md"
+    },
+    {
+      "document_id": "demo-gov-benefits-001-contract",
+      "document_type": "contract",
+      "source_name": "Draft state contract terms",
+      "path": "documents/demo-gov-benefits-001/contract.md"
+    },
+    {
+      "document_id": "demo-gov-benefits-001-order",
+      "document_type": "order_form",
+      "source_name": "Pricing and order requirements",
+      "path": "documents/demo-gov-benefits-001/order_form.md"
+    },
+    {
+      "document_id": "demo-gov-benefits-001-implementation",
+      "document_type": "implementation_notes",
+      "source_name": "Delivery feasibility notes",
+      "path": "documents/demo-gov-benefits-001/implementation_notes.md"
+    },
+    {
+      "document_id": "demo-gov-benefits-001-security",
+      "document_type": "security_questionnaire",
+      "source_name": "Security and privacy questionnaire",
+      "path": "documents/demo-gov-benefits-001/security_questionnaire.md"
+    }
+  ],
   "specialist_lanes": [
     {
       "department": "Legal",

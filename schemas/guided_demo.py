@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from schemas.case import Route
+from schemas.case import DocumentRef, Route
 
 DemoDepartment = Literal["Legal", "Security", "Finance", "Implementation"]
 ReviewDecision = Literal["approved", "approved_with_conditions", "needs_info", "blocker"]
@@ -97,6 +97,7 @@ class DemoCaseSpec(BaseModel):
     primary_route: Route
     supporting_routes: list[Route] = Field(min_length=1)
     summary: str = Field(min_length=1)
+    source_documents: list[DocumentRef] = Field(default_factory=list)
     specialist_lanes: list[DemoSpecialistLane] = Field(min_length=1)
     expected_evidence: list[DemoEvidenceRef] = Field(min_length=1)
     department_packets: list[DemoDepartmentPacket] = Field(default_factory=list)

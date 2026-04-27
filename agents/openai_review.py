@@ -214,18 +214,60 @@ def _ground_evidence_quotes(evidence: list[EvidenceSpan], payload: IntakePackage
     text_by_type = {document_type: text for document_type, text in _document_texts(payload)}
     grounded: list[EvidenceSpan] = []
     for item in evidence:
-        source_text = text_by_type.get(item.source_document_type, "")
+        source_document_type = _canonical_document_type(item.source_document_type, text_by_type)
+        source_text = text_by_type.get(source_document_type, "")
         if _contains_quote(source_text, item.quote):
-            grounded.append(item)
+            grounded.append(item.model_copy(update={"source_document_type": source_document_type}))
             continue
         replacement = _best_source_sentence(
             source_text,
             search_text=f"{item.quote} {item.normalized_fact}",
         )
-        if replacement is None:
+        if replacement is not None:
+            grounded.append(
+                item.model_copy(
+                    update={
+                        "source_document_type": source_document_type,
+                        "quote": replacement,
+                    }
+                )
+            )
+            continue
+        source_document_type, replacement = _best_packet_sentence(
+            text_by_type,
+            search_text=f"{item.quote} {item.normalized_fact}",
+        )
+        if replacement is None or source_document_type is None:
             raise ValueError(f"AI evidence quote is not grounded: {item.normalized_fact}")
-        grounded.append(item.model_copy(update={"quote": replacement}))
+        grounded.append(
+            item.model_copy(
+                update={
+                    "source_document_type": source_document_type,
+                    "quote": replacement,
+                }
+            )
+        )
     return grounded
+
+
+def _canonical_document_type(document_type: str, text_by_type: dict[str, str]) -> str:
+    if document_type in text_by_type:
+        return document_type
+    aliases = {
+        "security": "security_questionnaire",
+        "questionnaire": "security_questionnaire",
+        "security_review": "security_questionnaire",
+        "implementation": "implementation_notes",
+        "delivery": "implementation_notes",
+        "order": "order_form",
+        "pricing": "order_form",
+        "commercial": "order_form",
+        "terms": "contract",
+        "legal": "contract",
+        "email": "intake_email",
+        "intake": "intake_email",
+    }
+    return aliases.get(document_type.lower(), document_type)
 
 
 def _contains_quote(source_text: str, quote: str) -> bool:
@@ -250,6 +292,29 @@ def _best_source_sentence(source_text: str, search_text: str) -> str | None:
     if best_score < minimum_score:
         return None
     return best_sentence
+
+
+def _best_packet_sentence(
+    text_by_type: dict[str, str],
+    search_text: str,
+) -> tuple[str | None, str | None]:
+    best_document_type = None
+    best_sentence = None
+    best_score = 0
+    terms = _search_terms(search_text)
+    for document_type, source_text in text_by_type.items():
+        for sentence in _source_sentences(source_text):
+            sentence_terms = set(_search_terms(sentence))
+            score = len(terms.intersection(sentence_terms))
+            if score > best_score:
+                best_score = score
+                best_document_type = document_type
+                best_sentence = sentence
+
+    minimum_score = 2 if len(terms) >= 2 else 1
+    if best_score < minimum_score:
+        return None, None
+    return best_document_type, best_sentence
 
 
 def _source_sentences(source_text: str) -> list[str]:
