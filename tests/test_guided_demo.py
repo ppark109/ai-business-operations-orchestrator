@@ -58,6 +58,17 @@ def test_case_walkthrough_renders_left_rail_and_extraction_stage() -> None:
     assert "23 structured facts" in response.text
 
 
+def test_architecture_flow_colors_ai_hitl_and_system_layers() -> None:
+    client = _client()
+
+    response = client.get("/demo/architecture")
+
+    assert response.status_code == 200
+    assert response.text.count("flow-ai") == 3
+    assert response.text.count("flow-hitl") == 2
+    assert response.text.count("flow-system") == 5
+
+
 def test_recommendation_and_routing_show_ai_banner_and_all_departments() -> None:
     client = _client()
 

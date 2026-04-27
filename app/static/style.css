@@ -1485,6 +1485,11 @@ blockquote {
   background: #e8f5e9;
 }
 
+.architecture-flow .flow-system {
+  border-color: #d2d0c9;
+  background: #eeeeea;
+}
+
 .architecture-flow div:not(:last-child)::after {
   content: ">";
   position: absolute;
