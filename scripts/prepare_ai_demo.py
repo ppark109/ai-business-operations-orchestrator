@@ -27,15 +27,13 @@ def main() -> None:
     settings = get_settings()
     if not settings.enable_llm_agents:
         raise SystemExit("Set ENABLE_LLM_AGENTS=true for local AI demo preparation.")
-    if not settings.openai_api_key:
-        raise SystemExit("Set OPENAI_API_KEY for local AI demo preparation.")
 
     orchestrator = WorkflowOrchestrator(
         settings.database_file,
         enable_llm_agents=True,
-        openai_api_key=settings.openai_api_key,
-        openai_model=settings.openai_model,
-        openai_timeout_seconds=settings.openai_timeout_seconds,
+        codex_command=settings.codex_command,
+        codex_model=settings.codex_model,
+        codex_timeout_seconds=settings.codex_timeout_seconds,
     )
     try:
         orchestrator.store.clear()

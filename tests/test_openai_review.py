@@ -1,28 +1,28 @@
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
-from agents.openai_review import AIReviewResult, OpenAIReviewAgent
+from agents.openai_review import SYSTEM_PROMPT, AIReviewResult, CodexReviewAgent
 from workflows.seeding import load_case_files
 
 
-class _Responses:
+class _Runner:
     def __init__(self, parsed):
         self.parsed = parsed
         self.calls = []
 
-    def parse(self, **kwargs):
-        self.calls.append(kwargs)
-        return SimpleNamespace(output_parsed=self.parsed)
+    def __call__(self, prompt, schema, timeout_seconds):
+        self.calls.append(
+            {
+                "prompt": prompt,
+                "schema": schema,
+                "timeout_seconds": timeout_seconds,
+            }
+        )
+        return self.parsed
 
 
-class _Client:
-    def __init__(self, parsed):
-        self.responses = _Responses(parsed)
-
-
-def test_openai_review_agent_accepts_grounded_structured_output() -> None:
+def test_codex_review_agent_accepts_grounded_structured_output() -> None:
     case = {item.case_id: item for item in load_case_files(Path("data/seed/cases"))}[
         "seed-legal-001"
     ]
@@ -40,6 +40,7 @@ def test_openai_review_agent_accepts_grounded_structured_output() -> None:
             "findings": [
                 {
                     "rule_id": "liability_cap_above_standard",
+                    "finding_type": "ai_review",
                     "severity": "high",
                     "route": "legal",
                     "summary": "Liability cap exceeds the standard threshold.",
@@ -51,25 +52,26 @@ def test_openai_review_agent_accepts_grounded_structured_output() -> None:
             "rationale": "Legal review is needed.",
         }
     )
-    client = _Client(parsed)
-    agent = OpenAIReviewAgent(
-        api_key="",
-        model="gpt-4o-mini",
-        client=client,
+    runner = _Runner(parsed)
+    agent = CodexReviewAgent(
+        model="gpt-5.5",
+        runner=runner,
     )
 
     evidence, findings, trace = agent.run(case)
 
-    system_message = client.responses.calls[0]["input"][0]["content"]
-    assert "exact, contiguous substring" in system_message
-    assert "Do not paraphrase quotes" in system_message
+    prompt = runner.calls[0]["prompt"]
+    assert SYSTEM_PROMPT in prompt
+    assert "exact, contiguous substring" in prompt
+    assert "Do not paraphrase quotes" in prompt
     assert len(evidence) == 1
     assert findings[0].route == "legal"
-    assert findings[0].source_agent == "OpenAIReviewAgent"
-    assert trace.step_name == "openai_document_review"
+    assert findings[0].source_agent == "CodexReviewAgent"
+    assert trace.step_name == "codex_document_review"
+    assert trace.model_provider_label == "openai-codex"
 
 
-def test_openai_review_agent_rejects_ungrounded_quotes() -> None:
+def test_codex_review_agent_rejects_ungrounded_quotes() -> None:
     case = {item.case_id: item for item in load_case_files(Path("data/seed/cases"))}[
         "seed-legal-001"
     ]
@@ -89,13 +91,13 @@ def test_openai_review_agent_rejects_ungrounded_quotes() -> None:
             "rationale": "",
         }
     )
-    agent = OpenAIReviewAgent(api_key="", model="gpt-4o-mini", client=_Client(parsed))
+    agent = CodexReviewAgent(model="gpt-5.5", runner=_Runner(parsed))
 
     with pytest.raises(ValueError, match="not grounded"):
         agent.run(case)
 
 
-def test_openai_review_agent_regrounds_paraphrased_quote_to_source_sentence() -> None:
+def test_codex_review_agent_regrounds_paraphrased_quote_to_source_sentence() -> None:
     case = {item.case_id: item for item in load_case_files(Path("data/seed/cases"))}[
         "seed-finance-001"
     ]
@@ -113,6 +115,7 @@ def test_openai_review_agent_regrounds_paraphrased_quote_to_source_sentence() ->
             "findings": [
                 {
                     "rule_id": "discount_above_threshold",
+                    "finding_type": "ai_review",
                     "severity": "medium",
                     "route": "finance",
                     "summary": "Discount requires finance review.",
@@ -124,7 +127,7 @@ def test_openai_review_agent_regrounds_paraphrased_quote_to_source_sentence() ->
             "rationale": "",
         }
     )
-    agent = OpenAIReviewAgent(api_key="", model="gpt-4o-mini", client=_Client(parsed))
+    agent = CodexReviewAgent(model="gpt-5.5", runner=_Runner(parsed))
 
     evidence, findings, _ = agent.run(case)
 

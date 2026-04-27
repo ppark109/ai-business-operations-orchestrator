@@ -19,9 +19,9 @@ class Settings(BaseSettings):
     admin_token: str | None = None
     enable_api_agents: bool = False
     enable_llm_agents: bool = False
-    openai_api_key: str | None = None
-    openai_model: str = "gpt-4o-mini"
-    openai_timeout_seconds: int = 60
+    codex_command: str = "codex"
+    codex_model: str = "gpt-5.4"
+    codex_timeout_seconds: int = 300
     demo_bundle_path: str = "data/runtime/exports/demo-bundle.json"
 
     @property

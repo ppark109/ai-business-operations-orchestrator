@@ -42,7 +42,7 @@
       <tbody>
         {% for f in case.findings %}
         <tr>
-          <td>{{ "AI review" if f.source_agent == "OpenAIReviewAgent" else ("Deterministic playbook" if f.source_agent == "playbook" else "Deterministic specialist") }}</td>
+          <td>{{ "AI review" if f.source_agent == "CodexReviewAgent" else ("Deterministic playbook" if f.source_agent == "playbook" else "Deterministic specialist") }}</td>
           <td>{{ f.rule_id }}</td>
           <td>{{ f.severity }}</td>
           <td>{{ f.route }}</td>

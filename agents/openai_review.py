@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+import json
+import os
 import re
+import shutil
+import subprocess
+import tempfile
 import time
+from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from agents.base import build_trace
 from schemas.case import EvidenceSpan, Finding, IntakePackage, Route, Severity, TraceRecord
@@ -14,11 +21,22 @@ SYSTEM_PROMPT = (
     "business risk findings from synthetic intake documents. Every evidence.quote "
     "must be copied as an exact, contiguous substring from the named document. Do "
     "not paraphrase quotes, summarize quotes, combine text from multiple places, or "
-    "invent wording. If a finding cannot be supported by an exact quote, omit it."
+    "invent wording. If a finding cannot be supported by an exact quote, omit it. "
+    "Actively look for non-standard commercial intake risks: high discounts, custom "
+    "credits, unusual penalties, liability-cap exceptions, nonstandard indemnity, "
+    "conflicting terms, missing DPA, data residency, regulated data, unsupported "
+    "integrations, aggressive timelines, unclear owners, and missing statements of "
+    "work. When those risks appear, return one evidence item and one finding per "
+    "material risk. Use stable snake_case rule_id values such as "
+    "discount_above_threshold, custom_sla_credits, liability_cap_above_standard, "
+    "nonstandard_indemnity, missing_dpa_for_regulated_data, data_residency_request, "
+    "unsupported_integration, aggressive_go_live_date, and unclear_customer_owner."
 )
 
 
 class AIReviewEvidence(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     source_document_type: str
     locator: str
     quote: str
@@ -27,64 +45,52 @@ class AIReviewEvidence(BaseModel):
 
 
 class AIReviewFinding(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     rule_id: str
-    finding_type: str = "ai_review"
+    finding_type: str
     severity: Severity
     route: Route
     summary: str
-    evidence_quotes: list[str] = Field(default_factory=list)
+    evidence_quotes: list[str]
     confidence: float = Field(ge=0.0, le=1.0)
 
 
 class AIReviewResult(BaseModel):
-    evidence: list[AIReviewEvidence] = Field(default_factory=list)
-    findings: list[AIReviewFinding] = Field(default_factory=list)
-    risk_signals: list[str] = Field(default_factory=list)
-    rationale: str = ""
+    model_config = ConfigDict(extra="forbid")
+
+    evidence: list[AIReviewEvidence]
+    findings: list[AIReviewFinding]
+    risk_signals: list[str]
+    rationale: str
 
 
-class OpenAIReviewAgent:
-    provider_label = "openai-responses"
+CodexRunner = Callable[[str, dict[str, Any], int], AIReviewResult]
+
+
+class CodexReviewAgent:
+    provider_label = "openai-codex"
 
     def __init__(
         self,
         *,
-        api_key: str,
         model: str,
+        command: str = "codex",
         timeout_seconds: int = 60,
-        client: Any | None = None,
+        runner: CodexRunner | None = None,
     ) -> None:
-        if not api_key and client is None:
-            raise ValueError("OPENAI_API_KEY is required when ENABLE_LLM_AGENTS=true")
         self.model = model
+        self.command = command
         self.timeout_seconds = timeout_seconds
-        self.client = client or self._build_client(api_key)
+        self.runner = runner or self._run_codex
 
     def run(self, payload: IntakePackage) -> tuple[list[EvidenceSpan], list[Finding], TraceRecord]:
         start = time.perf_counter()
-        documents = _format_documents(payload)
-        response = self.client.responses.parse(
-            model=self.model,
-            input=[
-                {
-                    "role": "system",
-                    "content": SYSTEM_PROMPT,
-                },
-                {
-                    "role": "user",
-                    "content": (
-                        f"Case id: {payload.case_id}\n"
-                        f"Customer: {payload.customer_name}\n"
-                        f"{documents}"
-                    ),
-                },
-            ],
-            text_format=AIReviewResult,
-            timeout=self.timeout_seconds,
+        parsed = self.runner(
+            _build_prompt(payload),
+            AIReviewResult.model_json_schema(),
+            self.timeout_seconds,
         )
-        parsed = response.output_parsed
-        if parsed is None:
-            raise ValueError("OpenAI review returned no parsed output")
 
         evidence = [
             EvidenceSpan(
@@ -108,7 +114,7 @@ class OpenAIReviewAgent:
                 summary=item.summary,
                 evidence=_evidence_for_quotes(evidence, item.evidence_quotes),
                 confidence=item.confidence,
-                source_agent="OpenAIReviewAgent",
+                source_agent="CodexReviewAgent",
             )
             for index, item in enumerate(parsed.findings, start=1)
         ]
@@ -118,19 +124,49 @@ class OpenAIReviewAgent:
 
         trace = build_trace(
             case_id=payload.case_id,
-            step_name="openai_document_review",
-            agent_name="OpenAIReviewAgent",
+            step_name="codex_document_review",
+            agent_name="CodexReviewAgent",
             inputs_summary=f"documents={len(_document_texts(payload))}",
             outputs_summary=f"evidence={len(evidence)} findings={len(findings)}",
             start_time=start,
         ).model_copy(update={"model_provider_label": self.provider_label})
         return evidence, findings, trace
 
-    @staticmethod
-    def _build_client(api_key: str):
-        from openai import OpenAI
-
-        return OpenAI(api_key=api_key)
+    def _run_codex(self, prompt: str, schema: dict[str, Any], timeout_seconds: int) -> AIReviewResult:
+        with tempfile.TemporaryDirectory(prefix="ai-flowops-codex-") as temp_dir:
+            schema_path = Path(temp_dir) / "schema.json"
+            output_path = Path(temp_dir) / "result.json"
+            schema_path.write_text(json.dumps(schema, indent=2), encoding="utf-8")
+            command = [
+                _resolve_executable(self.command),
+                "--ask-for-approval",
+                "never",
+                "exec",
+                "--ephemeral",
+                "--sandbox",
+                "read-only",
+                "--model",
+                self.model,
+                "--output-schema",
+                str(schema_path),
+                "-o",
+                str(output_path),
+                "--",
+                prompt,
+            ]
+            completed = subprocess.run(
+                command,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+            )
+            if completed.returncode != 0:
+                stderr = completed.stderr.strip()[-1000:]
+                raise RuntimeError(f"Codex review failed with exit {completed.returncode}: {stderr}")
+            if not output_path.exists():
+                raise RuntimeError("Codex review did not write structured output.")
+            return AIReviewResult.model_validate_json(output_path.read_text(encoding="utf-8"))
 
 
 def _document_texts(payload: IntakePackage) -> list[tuple[str, str]]:
@@ -153,6 +189,25 @@ def _format_documents(payload: IntakePackage) -> str:
         f"## {document_type}\n{text}"
         for document_type, text in _document_texts(payload)
     )
+
+
+def _build_prompt(payload: IntakePackage) -> str:
+    return (
+        f"{SYSTEM_PROMPT}\n\n"
+        "Return only JSON matching the supplied schema. Do not edit files. Do not run tools.\n\n"
+        f"Case id: {payload.case_id}\n"
+        f"Customer: {payload.customer_name}\n\n"
+        f"{_format_documents(payload)}"
+    )
+
+
+def _resolve_executable(command: str) -> str:
+    if os.name == "nt" and not command.lower().endswith((".exe", ".cmd", ".bat")):
+        for candidate in (f"{command}.cmd", f"{command}.exe", command):
+            resolved = shutil.which(candidate)
+            if resolved:
+                return resolved
+    return command
 
 
 def _ground_evidence_quotes(evidence: list[EvidenceSpan], payload: IntakePackage) -> list[EvidenceSpan]:

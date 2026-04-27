@@ -17,7 +17,7 @@ from agents import (
     SecurityReviewAgent,
     TaskGenerationAgent,
 )
-from agents.openai_review import OpenAIReviewAgent
+from agents.openai_review import CodexReviewAgent
 from schemas.case import (
     Approval,
     CaseWorkflowState,
@@ -52,9 +52,9 @@ class WorkflowOrchestrator:
         db_path: Path | str | None = None,
         *,
         enable_llm_agents: bool = False,
-        openai_api_key: str | None = None,
-        openai_model: str = "gpt-4o-mini",
-        openai_timeout_seconds: int = 60,
+        codex_command: str = "codex",
+        codex_model: str = "gpt-5.5",
+        codex_timeout_seconds: int = 300,
     ) -> None:
         self.store = WorkflowStore(db_path or _default_db_path())
         self.playbook = load_default_playbook()
@@ -70,10 +70,10 @@ class WorkflowOrchestrator:
         self.task_agent = TaskGenerationAgent()
         self.critic = CriticEvaluatorAgent()
         self.openai_review_agent = (
-            OpenAIReviewAgent(
-                api_key=openai_api_key or "",
-                model=openai_model,
-                timeout_seconds=openai_timeout_seconds,
+            CodexReviewAgent(
+                command=codex_command,
+                model=codex_model,
+                timeout_seconds=codex_timeout_seconds,
             )
             if enable_llm_agents
             else None
