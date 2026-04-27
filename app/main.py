@@ -18,7 +18,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         version=resolved_settings.app_version,
     )
     app.state.settings = resolved_settings
-    app.state.orchestrator = WorkflowOrchestrator(resolved_settings.database_file)
+    app.state.orchestrator = WorkflowOrchestrator(
+        resolved_settings.database_file,
+        enable_llm_agents=resolved_settings.enable_llm_agents,
+        openai_api_key=resolved_settings.openai_api_key,
+        openai_model=resolved_settings.openai_model,
+        openai_timeout_seconds=resolved_settings.openai_timeout_seconds,
+    )
     app.state.templates = Jinja2Templates(directory=Path("app/templates"))
     app.mount("/static", StaticFiles(directory=Path("app/static"), html=True), name="static")
 

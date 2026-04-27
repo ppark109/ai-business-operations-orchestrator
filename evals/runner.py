@@ -41,6 +41,9 @@ def run_eval(store: WorkflowStore, folder: Path, output: Path | None = None):
         is_approval_ok = bool(
             routing and routing.approval_required == seed.expected_approval_required
         )
+        detected_labels = _detected_risk_labels(findings)
+        expected_labels = seed.expected_key_risk_labels
+        is_clause_match_ok = _expected_labels_detected(expected_labels, detected_labels)
 
         # quote grounding check: all findings evidence should be present in intake text.
         source_text = _case_text(seed)
@@ -53,15 +56,28 @@ def run_eval(store: WorkflowStore, folder: Path, output: Path | None = None):
         approval_pass += int(is_approval_ok)
         grounding_pass += int(is_grounding_ok)
         brief_pass += int(is_brief_ok)
-        total_pass += int(is_route_ok and is_approval_ok and is_grounding_ok and is_brief_ok and is_trace_ok)
+        total_pass += int(
+            is_route_ok
+            and is_approval_ok
+            and is_grounding_ok
+            and is_clause_match_ok
+            and is_brief_ok
+            and is_trace_ok
+        )
 
         eval_row = EvalResult(
             case_id=seed.case_id,
             expected_route=seed.expected_route,
             actual_route=routing.recommended_route if routing else "auto_approve",
+            expected_approval_required=seed.expected_approval_required,
+            actual_approval_required=routing.approval_required if routing else None,
+            expected_key_risk_labels=expected_labels,
+            detected_key_risk_labels=detected_labels,
             route_pass=is_route_ok,
             grounding_pass=is_grounding_ok,
             approval_pass=is_approval_ok,
+            clause_match_pass=is_clause_match_ok,
+            trace_complete=is_trace_ok,
             brief_completeness_pass=is_brief_ok and is_trace_ok,
             notes=f"route={routing.recommended_route if routing else 'none'} trace={len(state.traces)}",
         )
@@ -75,6 +91,9 @@ def run_eval(store: WorkflowStore, folder: Path, output: Path | None = None):
                 "route_pass": is_route_ok,
                 "approval_pass": is_approval_ok,
                 "grounding_pass": is_grounding_ok,
+                "clause_match_pass": is_clause_match_ok,
+                "expected_key_risk_labels": expected_labels,
+                "detected_key_risk_labels": detected_labels,
                 "brief_completeness_pass": eval_row.brief_completeness_pass,
                 "trace_complete": is_trace_ok,
             }
@@ -102,6 +121,8 @@ def run_eval(store: WorkflowStore, folder: Path, output: Path | None = None):
 
 
 def _case_text(payload: IntakePackage) -> str:
+    if payload.source_documents:
+        return " ".join(document.content or "" for document in payload.source_documents).lower()
     return " ".join(
         [
             payload.intake_email_text,
@@ -136,3 +157,20 @@ def _trace_completeness(traces) -> bool:
     }
     trace_steps = {trace.step_name for trace in traces}
     return required.issubset(trace_steps)
+
+
+def _detected_risk_labels(findings) -> list[str]:
+    labels = set()
+    for finding in findings:
+        labels.add(finding.rule_id)
+        labels.add(finding.rule_id.removeprefix("playbook-"))
+        labels.add(finding.rule_id.replace("-", "_"))
+        labels.add(finding.rule_id.removeprefix("playbook-").replace("-", "_"))
+    return sorted(labels)
+
+
+def _expected_labels_detected(expected: list[str], detected: list[str]) -> bool:
+    if not expected:
+        return True
+    detected_set = set(detected)
+    return all(label in detected_set for label in expected)

@@ -21,7 +21,10 @@ class ImplementationReviewAgent:
         text = " ".join([payload.implementation_notes, payload.intake_email_text]).lower()
         findings: list[Finding] = []
 
-        if re.search(r"next week|asap|urgent|rush", text) or "aggressive go-live" in text:
+        if (
+            re.search(r"next week|asap|urgent|rush|\b[1-4]\s+days?\b", text)
+            or "aggressive go-live" in text
+        ):
             findings.append(
                 _finding(
                     payload.case_id,
@@ -31,7 +34,7 @@ class ImplementationReviewAgent:
                     "implementation",
                     evidence,
                     confidence=0.95,
-                    keywords=("aggressive", "next week", "asap", "urgent", "rush"),
+                    keywords=("aggressive", "next week", "asap", "urgent", "rush", "4 days"),
                     required_evidence=("notes_span", "intake_span"),
                 )
             )
@@ -62,6 +65,21 @@ class ImplementationReviewAgent:
                     evidence,
                     confidence=0.9,
                     keywords=("unclear owner", "no owner", "owner to be determined"),
+                    required_evidence=("notes_span",),
+                )
+            )
+
+        if "dependency conflict" in text:
+            findings.append(
+                _finding(
+                    payload.case_id,
+                    "playbook-dependency-conflict",
+                    "implementation dependency conflict",
+                    "medium",
+                    "implementation",
+                    evidence,
+                    confidence=0.91,
+                    keywords=("dependency conflict", "conflict"),
                     required_evidence=("notes_span",),
                 )
             )

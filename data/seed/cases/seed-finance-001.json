@@ -8,6 +8,38 @@
   "order_form_text": "Requesting 45% discount and 2 months SLA credits due to launch support.",
   "implementation_notes": "Implementation owner assigned and integration supported.",
   "security_questionnaire_text": "Security questionnaire completed.",
+  "source_documents": [
+    {
+      "document_id": "seed-finance-001-intake",
+      "document_type": "intake_email",
+      "source_name": "Deal desk intake email",
+      "path": "documents/seed-finance-001/intake_email.md"
+    },
+    {
+      "document_id": "seed-finance-001-contract",
+      "document_type": "contract",
+      "source_name": "Commercial terms addendum",
+      "path": "documents/seed-finance-001/contract.md"
+    },
+    {
+      "document_id": "seed-finance-001-order",
+      "document_type": "order_form",
+      "source_name": "Discounted order form",
+      "path": "documents/seed-finance-001/order_form.md"
+    },
+    {
+      "document_id": "seed-finance-001-implementation",
+      "document_type": "implementation_notes",
+      "source_name": "Launch support plan",
+      "path": "documents/seed-finance-001/implementation_notes.md"
+    },
+    {
+      "document_id": "seed-finance-001-security",
+      "document_type": "security_questionnaire",
+      "source_name": "Security questionnaire",
+      "path": "documents/seed-finance-001/security_questionnaire.md"
+    }
+  ],
   "metadata": {
     "scenario": "finance",
     "source": "seed"

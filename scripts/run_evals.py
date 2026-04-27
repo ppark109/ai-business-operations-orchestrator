@@ -25,6 +25,9 @@ def main() -> None:
         print(f"run_id={result['run_id']} route_accuracy={result['route_accuracy']:.2f}")
         print(f"approval_accuracy={result['approval_accuracy']:.2f}")
         print(f"grounding_accuracy={result['grounding_accuracy']:.2f}")
+        print(f"total_accuracy={result['total_accuracy']:.2f}")
+        if result["total_accuracy"] < 1.0:
+            raise SystemExit(1)
     finally:
         orchestrator.close()
 

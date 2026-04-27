@@ -25,7 +25,7 @@
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th>Case</th><th>Expected route</th><th>Actual route</th><th>Route pass</th><th>Approval pass</th><th>Grounding</th><th>Brief</th></tr>
+        <tr><th>Case</th><th>Expected route</th><th>Actual route</th><th>Expected approval</th><th>Actual approval</th><th>Risk labels</th><th>Route pass</th><th>Approval pass</th><th>Grounding</th><th>Clause</th><th>Trace</th><th>Brief</th></tr>
       </thead>
       <tbody>
         {% for row in evals %}
@@ -33,13 +33,18 @@
           <td>{{ row.case_id }}</td>
           <td>{{ row.expected_route }}</td>
           <td>{{ row.actual_route }}</td>
+          <td>{{ row.expected_approval_required }}</td>
+          <td>{{ row.actual_approval_required }}</td>
+          <td>{{ row.detected_key_risk_labels | join(", ") }}</td>
           <td>{{ row.route_pass }}</td>
           <td>{{ row.approval_pass }}</td>
           <td>{{ row.grounding_pass }}</td>
+          <td>{{ row.clause_match_pass }}</td>
+          <td>{{ row.trace_complete }}</td>
           <td>{{ row.brief_completeness_pass }}</td>
         </tr>
         {% else %}
-        <tr><td colspan="7">No evals yet.</td></tr>
+        <tr><td colspan="12">No evals yet.</td></tr>
         {% endfor %}
       </tbody>
     </table>

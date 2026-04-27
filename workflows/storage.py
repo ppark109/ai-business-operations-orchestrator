@@ -583,7 +583,12 @@ class WorkflowStore:
             summary["grounding_pass"] += int(grounding_pass)
             summary["brief_pass"] += int(brief_pass)
             summary["total_pass"] += int(
-                route_pass and approval_pass and grounding_pass and brief_pass
+                route_pass
+                and approval_pass
+                and grounding_pass
+                and bool(payload.get("clause_match_pass", True))
+                and bool(payload.get("trace_complete", True))
+                and brief_pass
             )
         total = float(summary["total"])
         if total == 0:

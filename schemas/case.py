@@ -28,6 +28,8 @@ class DocumentRef(BaseModel):
     document_type: str = Field(min_length=1)
     source_name: str = Field(min_length=1)
     content_hash: str | None = None
+    path: str | None = None
+    content: str | None = None
 
 
 class EvidenceSpan(BaseModel):
@@ -48,6 +50,7 @@ class IntakePackage(BaseModel):
     order_form_text: str = Field(min_length=1)
     implementation_notes: str = Field(min_length=1)
     security_questionnaire_text: str = Field(min_length=1)
+    source_documents: list[DocumentRef] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
     expected_route: Route | None = None
     expected_approval_required: bool | None = None
@@ -162,9 +165,15 @@ class EvalResult(BaseModel):
     case_id: str = Field(min_length=1)
     expected_route: Route | None
     actual_route: Route
+    expected_approval_required: bool | None = None
+    actual_approval_required: bool | None = None
+    expected_key_risk_labels: list[str] = Field(default_factory=list)
+    detected_key_risk_labels: list[str] = Field(default_factory=list)
     route_pass: bool
     grounding_pass: bool
     approval_pass: bool
+    clause_match_pass: bool = True
+    trace_complete: bool = True
     brief_completeness_pass: bool
     notes: str | None = None
 

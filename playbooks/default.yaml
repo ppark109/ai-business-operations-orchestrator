@@ -23,6 +23,7 @@ rules:
         - "liability cap"
         - "above 1x"
         - "liability above"
+        - "liability language above"
     severity: high
     route: legal
     approval_required: true
@@ -140,6 +141,19 @@ rules:
     required_evidence:
       - notes_span
     task_template: Pause until missing statement of work is supplied.
+
+  - id: dependency_conflict
+    description: Conflicting implementation dependencies require implementation triage.
+    when:
+      contains_any:
+        - "dependency conflict"
+        - "conflict"
+    severity: medium
+    route: implementation
+    approval_required: true
+    required_evidence:
+      - notes_span
+    task_template: Resolve dependency conflicts before kickoff.
 
   - id: discount_above_threshold
     description: Discount above internal threshold requires finance approval.

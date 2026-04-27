@@ -17,6 +17,7 @@ from agents import (
     SecurityReviewAgent,
     TaskGenerationAgent,
 )
+from agents.openai_review import OpenAIReviewAgent
 from schemas.case import (
     Approval,
     CaseWorkflowState,
@@ -46,9 +47,18 @@ def _default_db_path() -> Path:
 class WorkflowOrchestrator:
     """End-to-end orchestrator for the v1 deterministic workflow."""
 
-    def __init__(self, db_path: Path | str | None = None) -> None:
+    def __init__(
+        self,
+        db_path: Path | str | None = None,
+        *,
+        enable_llm_agents: bool = False,
+        openai_api_key: str | None = None,
+        openai_model: str = "gpt-4o-mini",
+        openai_timeout_seconds: int = 60,
+    ) -> None:
         self.store = WorkflowStore(db_path or _default_db_path())
         self.playbook = load_default_playbook()
+        self.enable_llm_agents = enable_llm_agents
         self.normalization_agent = IntakeNormalizationAgent()
         self.evidence_agent = EvidenceExtractionAgent()
         self.contract_agent = ContractRiskAgent()
@@ -59,6 +69,15 @@ class WorkflowOrchestrator:
         self.brief_agent = BriefGenerationAgent()
         self.task_agent = TaskGenerationAgent()
         self.critic = CriticEvaluatorAgent()
+        self.openai_review_agent = (
+            OpenAIReviewAgent(
+                api_key=openai_api_key or "",
+                model=openai_model,
+                timeout_seconds=openai_timeout_seconds,
+            )
+            if enable_llm_agents
+            else None
+        )
 
     def close(self) -> None:
         self.store.close()
@@ -90,18 +109,25 @@ class WorkflowOrchestrator:
         normalized = normalized_result.normalized_case
         traces.append(normalized_result.trace)
 
-        evidence, evidence_trace = self.evidence_agent.run(intake, normalized)
-        traces.extend(evidence_trace)
+        if self.openai_review_agent is not None:
+            evidence, specialist_findings, ai_trace = self.openai_review_agent.run(intake)
+            traces.append(ai_trace)
+            normalized.risk_signals = sorted(
+                {finding.rule_id for finding in specialist_findings}
+            )
+        else:
+            evidence, evidence_trace = self.evidence_agent.run(intake, normalized)
+            traces.extend(evidence_trace)
 
-        contract_findings, contract_trace = self.contract_agent.run(intake, normalized, evidence)
-        security_findings, security_trace = self.security_agent.run(intake, normalized, evidence)
-        impl_findings, impl_trace = self.implementation_agent.run(intake, normalized, evidence)
-        finance_findings, finance_trace = self.finance_agent.run(intake, normalized, evidence)
-        traces.extend([contract_trace, security_trace, impl_trace, finance_trace])
+            contract_findings, contract_trace = self.contract_agent.run(intake, normalized, evidence)
+            security_findings, security_trace = self.security_agent.run(intake, normalized, evidence)
+            impl_findings, impl_trace = self.implementation_agent.run(intake, normalized, evidence)
+            finance_findings, finance_trace = self.finance_agent.run(intake, normalized, evidence)
+            traces.extend([contract_trace, security_trace, impl_trace, finance_trace])
 
-        specialist_findings = _dedupe_findings(
-            [*contract_findings, *security_findings, *impl_findings, *finance_findings]
-        )
+            specialist_findings = _dedupe_findings(
+                [*contract_findings, *security_findings, *impl_findings, *finance_findings]
+            )
         playbook_findings = _dedupe_findings(match_rules(self.playbook, normalized, evidence))
 
         all_findings = _dedupe_findings([*specialist_findings, *playbook_findings])

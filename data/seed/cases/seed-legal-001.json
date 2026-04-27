@@ -8,6 +8,38 @@
   "order_form_text": "Order text is straightforward with no major discount request.",
   "implementation_notes": "Standard migration path on supported stack.",
   "security_questionnaire_text": "No regulated data processing specified.",
+  "source_documents": [
+    {
+      "document_id": "seed-legal-001-intake",
+      "document_type": "intake_email",
+      "source_name": "Intake email from account team",
+      "path": "documents/seed-legal-001/intake_email.md"
+    },
+    {
+      "document_id": "seed-legal-001-contract",
+      "document_type": "contract",
+      "source_name": "Draft MSA redline",
+      "path": "documents/seed-legal-001/contract.md"
+    },
+    {
+      "document_id": "seed-legal-001-order",
+      "document_type": "order_form",
+      "source_name": "Order form",
+      "path": "documents/seed-legal-001/order_form.md"
+    },
+    {
+      "document_id": "seed-legal-001-implementation",
+      "document_type": "implementation_notes",
+      "source_name": "Implementation notes",
+      "path": "documents/seed-legal-001/implementation_notes.md"
+    },
+    {
+      "document_id": "seed-legal-001-security",
+      "document_type": "security_questionnaire",
+      "source_name": "Security questionnaire",
+      "path": "documents/seed-legal-001/security_questionnaire.md"
+    }
+  ],
   "metadata": {
     "scenario": "legal",
     "source": "seed"

@@ -8,6 +8,38 @@
   "order_form_text": "No credits requested.",
   "implementation_notes": "Standard implementation plan.",
   "security_questionnaire_text": "Missing DPA and security artifacts, plus residency mention.",
+  "source_documents": [
+    {
+      "document_id": "heldout-security-001-intake",
+      "document_type": "intake_email",
+      "source_name": "Security review intake",
+      "path": "documents/heldout-security-001/intake_email.md"
+    },
+    {
+      "document_id": "heldout-security-001-contract",
+      "document_type": "contract",
+      "source_name": "Security addendum draft",
+      "path": "documents/heldout-security-001/contract.md"
+    },
+    {
+      "document_id": "heldout-security-001-order",
+      "document_type": "order_form",
+      "source_name": "Order form",
+      "path": "documents/heldout-security-001/order_form.md"
+    },
+    {
+      "document_id": "heldout-security-001-implementation",
+      "document_type": "implementation_notes",
+      "source_name": "Implementation notes",
+      "path": "documents/heldout-security-001/implementation_notes.md"
+    },
+    {
+      "document_id": "heldout-security-001-security",
+      "document_type": "security_questionnaire",
+      "source_name": "Security questionnaire",
+      "path": "documents/heldout-security-001/security_questionnaire.md"
+    }
+  ],
   "metadata": {
     "scenario": "held_out"
   },

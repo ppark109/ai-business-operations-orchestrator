@@ -21,7 +21,7 @@ class ContractRiskAgent:
         findings: list[Finding] = []
         text = " ".join([payload.contract_text, payload.order_form_text]).lower()
 
-        if re.search(r"liability\s+cap.*(above|greater|1x|2x|3x)", text):
+        if re.search(r"liability\s+(cap|language).*(above|greater|1x|2x|3x|standard)", text):
             findings.append(
                 _finding(
                     payload.case_id,
@@ -30,7 +30,7 @@ class ContractRiskAgent:
                     "high",
                     "legal",
                     evidence,
-                    keywords=("liability cap", "above 1x", "liability above"),
+                    keywords=("liability cap", "liability language above", "above 1x", "liability above"),
                     required_evidence=("contract_span",),
                 )
             )

@@ -14,6 +14,7 @@ def test_eval_runner_produces_results(tmp_path: Path) -> None:
         assert out.exists()
         payload = json.loads(out.read_text(encoding="utf-8"))
         assert "rows" in payload
+        assert result["total_accuracy"] == 1.0
     finally:
         orchestrator.close()
 

@@ -21,27 +21,77 @@
 </section>
 
 <section class="card">
+  <h2>Source documents</h2>
+  {% for document in case.normalized_case.document_refs %}
+  <details>
+    <summary>{{ document.document_type }} - {{ document.source_name }}</summary>
+    <pre class="doc-view">{{ document.content or "No source document content stored." }}</pre>
+  </details>
+  {% else %}
+  <p>No source documents.</p>
+  {% endfor %}
+</section>
+
+<section class="card">
   <h2>Findings</h2>
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th>Rule</th><th>Severity</th><th>Route</th><th>Summary</th></tr>
+        <tr><th>Layer</th><th>Rule</th><th>Severity</th><th>Route</th><th>Summary</th></tr>
       </thead>
       <tbody>
         {% for f in case.findings %}
         <tr>
+          <td>{{ "AI review" if f.source_agent == "OpenAIReviewAgent" else ("Deterministic playbook" if f.source_agent == "playbook" else "Deterministic specialist") }}</td>
           <td>{{ f.rule_id }}</td>
           <td>{{ f.severity }}</td>
           <td>{{ f.route }}</td>
           <td>{{ f.summary }}</td>
         </tr>
         {% else %}
-        <tr><td colspan="4">No findings.</td></tr>
+        <tr><td colspan="5">No findings.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </section>
+
+<section class="card">
+  <h2>Extracted evidence</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Finding</th><th>Source</th><th>Fact</th><th>Quote</th></tr>
+      </thead>
+      <tbody>
+        {% for finding in case.findings %}
+        {% for evidence in finding.evidence %}
+        <tr>
+          <td>{{ finding.rule_id }}</td>
+          <td>{{ evidence.source_document_type }}</td>
+          <td>{{ evidence.normalized_fact }}</td>
+          <td>{{ evidence.quote }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr><td colspan="4">No extracted evidence.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% if case.routing_decision %}
+<section class="card">
+  <h2>Route decision</h2>
+  <p><strong>Final route:</strong> {{ case.routing_decision.recommended_route }}</p>
+  <p><strong>Confidence:</strong> {{ case.routing_decision.confidence }}</p>
+  <p><strong>Approval required:</strong> {{ case.routing_decision.approval_required }}</p>
+  <p><strong>Triggered rules:</strong> {{ case.routing_decision.triggered_rules | join(", ") }}</p>
+  <p><strong>Reasons:</strong></p>
+  <ul>{% for reason in case.routing_decision.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+</section>
+{% endif %}
 
 <section class="card">
   <h2>Brief</h2>

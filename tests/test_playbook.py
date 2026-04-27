@@ -13,7 +13,7 @@ def test_default_playbook_loads() -> None:
     playbook = load_default_playbook()
 
     assert playbook.name == "default-commercial-intake-playbook"
-    assert len(playbook.rules) == 14
+    assert len(playbook.rules) == 15
 
 
 def test_default_playbook_routes_are_supported() -> None:

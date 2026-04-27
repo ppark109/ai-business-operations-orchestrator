@@ -15,17 +15,20 @@ EVIDENCE_TYPE_TO_SOURCE: dict[str, set[str]] = {
 
 PHRASE_TO_SIGNAL: dict[str, str] = {
     "liability cap": "liability_cap_above_standard",
+    "liability language above": "liability_cap_above_standard",
     "indemnity": "nonstandard_indemnity",
     "dpa": "missing_dpa_for_regulated_data",
     "data residency": "data_residency_request",
     "regulated data": "regulated_data_without_security_artifact",
     "missing dpa": "missing_dpa_for_regulated_data",
     "aggressive": "aggressive_go_live_date",
+    "4 days": "aggressive_go_live_date",
     "next week": "aggressive_go_live_date",
     "unsupported": "unsupported_integration",
     "custom sap plugin": "unsupported_integration",
     "unclear owner": "unclear_customer_owner",
     "no owner": "unclear_customer_owner",
+    "dependency conflict": "dependency_conflict",
     "discount": "discount_above_threshold",
     "sla credits": "custom_sla_credits",
     "penalty": "unusual_penalty_terms",
@@ -39,6 +42,7 @@ KNOWN_RISK_SIGNALS = frozenset(
     {
         *PHRASE_TO_SIGNAL.values(),
         "incomplete_intake_package",
+        "dependency_conflict",
     }
 )
 
@@ -100,6 +104,11 @@ def _term_matches(evidence: EvidenceSpan, terms: list[str]) -> bool:
 
 
 def _collect_documents(payload: IntakePackage) -> list[tuple[str, str]]:
+    if payload.source_documents:
+        return [
+            (document.document_type, document.content or "")
+            for document in payload.source_documents
+        ]
     return [
         ("intake_email", payload.intake_email_text),
         ("contract", payload.contract_text),
