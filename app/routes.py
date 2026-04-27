@@ -9,6 +9,7 @@ from fastapi import APIRouter, Form, Header, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
+from app.guided_demo import guided_demo_view_model, load_guided_demo_case
 from schemas.case import IntakePackage, Route
 from workflows.orchestrator import WorkflowOrchestrator
 from workflows.routing import ROUTES
@@ -455,6 +456,66 @@ def home(request: Request) -> HTMLResponse:
             "request": request,
             **payload,
             "routes": ROUTES,
+            **_template_security_context(request),
+        },
+    )
+
+
+@router.get("/demo", response_class=HTMLResponse)
+def guided_demo_home(request: Request) -> HTMLResponse:
+    return _templates(request).TemplateResponse(
+        request,
+        "demo_overview.html",
+        {
+            "request": request,
+            **guided_demo_view_model(),
+            **_template_security_context(request),
+        },
+    )
+
+
+@router.get("/demo/cases", response_class=HTMLResponse)
+def guided_demo_cases(request: Request) -> HTMLResponse:
+    return _templates(request).TemplateResponse(
+        request,
+        "demo_cases.html",
+        {
+            "request": request,
+            **guided_demo_view_model(),
+            **_template_security_context(request),
+        },
+    )
+
+
+@router.get("/demo/cases/{case_id}", response_class=HTMLResponse)
+def guided_demo_case_detail(
+    request: Request,
+    case_id: str,
+    step: str = "documents",
+    tab: str = "source",
+) -> HTMLResponse:
+    demo_case = load_guided_demo_case()
+    if case_id != demo_case.case_id:
+        raise HTTPException(status_code=404, detail="Guided demo case not found")
+    return _templates(request).TemplateResponse(
+        request,
+        "demo_case.html",
+        {
+            "request": request,
+            **guided_demo_view_model(step, tab),
+            **_template_security_context(request),
+        },
+    )
+
+
+@router.get("/demo/architecture", response_class=HTMLResponse)
+def guided_demo_architecture(request: Request) -> HTMLResponse:
+    return _templates(request).TemplateResponse(
+        request,
+        "demo_architecture.html",
+        {
+            "request": request,
+            **guided_demo_view_model(),
             **_template_security_context(request),
         },
     )

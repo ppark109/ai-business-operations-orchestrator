@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <p class="eyebrow">Architecture / build proof</p>
+  <h1>How the system is built</h1>
+  <p>The guided demo is read-only, but it reflects the same workflow layers used by the backend.</p>
+</section>
+
+<section class="architecture-flow">
+  {% for label in [
+    "Document Inputs",
+    "Ingestion Layer",
+    "AI Decision Engine",
+    "Workflow Engine",
+    "Human Review Layer",
+    "Database / Audit Log",
+    "Dashboard Layer"
+  ] %}
+    <article>
+      <strong>{{ label }}</strong>
+      {% if label == "Document Inputs" %}<span>RFPs, contracts, notes, questionnaires</span>{% endif %}
+      {% if label == "Ingestion Layer" %}<span>Parse, normalize, attach metadata</span>{% endif %}
+      {% if label == "AI Decision Engine" %}<span>Extract facts, classify risk, recommend action</span>{% endif %}
+      {% if label == "Workflow Engine" %}<span>Route packets and enforce review gates</span>{% endif %}
+      {% if label == "Human Review Layer" %}<span>Approve, modify, request information</span>{% endif %}
+      {% if label == "Database / Audit Log" %}<span>Persist cases, findings, traces, KPIs</span>{% endif %}
+      {% if label == "Dashboard Layer" %}<span>Display throughput, risk, decisions</span>{% endif %}
+    </article>
+  {% endfor %}
+</section>
+
+<section class="grid">
+  <article class="card">
+    <h2>Technical Stack</h2>
+    <ul>
+      <li>Frontend: server-rendered FastAPI/Jinja templates</li>
+      <li>Backend: FastAPI workflow application</li>
+      <li>Database: SQLite</li>
+      <li>AI prep: local Codex CLI workflow, no public token usage</li>
+      <li>CI: GitHub Actions</li>
+      <li>Production demo: private VM deployment</li>
+    </ul>
+  </article>
+  <article class="card">
+    <h2>Deployment Flow</h2>
+    <div class="deploy-flow">
+      <span>Local Development</span>
+      <span>GitHub</span>
+      <span>GitHub Actions</span>
+      <span>Private VM Demo</span>
+    </div>
+  </article>
+</section>
+
+<section class="card">
+  <h2>What I Built</h2>
+  <div class="proof-grid">
+    <div>
+      <h3>Product / Operations Design</h3>
+      <ul>
+        <li>Designed end-to-end intake, routing, review, and KPI workflow stages.</li>
+        <li>Created human-in-the-loop approval points for governed decisions.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>AI System Design</h3>
+      <ul>
+        <li>Built structured AI decision records with evidence mapping.</li>
+        <li>Separated AI recommendations from human-owned final decisions.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Workflow Automation</h3>
+      <ul>
+        <li>Generated department-specific action packets and review conclusions.</li>
+        <li>Logged routing events, final decisions, and operational KPIs.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Deployment / Engineering</h3>
+      <ul>
+        <li>Versioned source in GitHub with automated CI checks.</li>
+        <li>Kept the public demo read-only and protected from live AI token usage.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+{% endblock %}

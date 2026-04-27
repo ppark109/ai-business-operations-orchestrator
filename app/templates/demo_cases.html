@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-head">
+  <p class="eyebrow">Demo case gallery</p>
+  <h1>Choose a completed workflow</h1>
+  <p>The flagship case is fully precomputed so viewers can inspect the system without running live AI.</p>
+</section>
+
+<section class="case-gallery">
+  <article class="gallery-card featured">
+    <span class="status-pill">Recommended</span>
+    <h2>{{ demo_case.title }}</h2>
+    <p>{{ demo_case.summary }}</p>
+    <ul class="kv">
+      <li><span>Input</span><span>{{ demo_case.input_type }}</span></li>
+      <li><span>AI decision</span><span>{{ demo_case.ai_recommendation }}</span></li>
+      <li><span>Departments</span><span>{{ demo_case.supporting_routes|join(", ") }}</span></li>
+      <li><span>Final status</span><span>{{ demo_case.status }}</span></li>
+    </ul>
+    <a class="button-link" href="/demo/cases/{{ demo_case.case_id }}">Open Case</a>
+  </article>
+
+  <article class="gallery-card muted">
+    <span class="status-pill">Future example</span>
+    <h2>Customer Escalation Email</h2>
+    <p>Escalation classification across Support, Account Management, Legal, and Product.</p>
+  </article>
+
+  <article class="gallery-card muted">
+    <span class="status-pill">Future example</span>
+    <h2>Vendor Procurement Request</h2>
+    <p>Approval-path and risk routing for vendor proposal, invoice, and department request.</p>
+  </article>
+</section>
+{% endblock %}

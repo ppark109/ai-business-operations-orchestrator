@@ -126,3 +126,360 @@ button {
   border: 1px solid #e2e8f0;
   padding: 0.75rem;
 }
+
+.demo-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+  gap: 1rem;
+  align-items: stretch;
+  margin-bottom: 1rem;
+}
+
+.demo-hero > div,
+.hero-summary,
+.gallery-card,
+.guided-main,
+.guided-timeline,
+.case-summary-panel,
+.metric-card,
+.route-column,
+.architecture-flow article {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.demo-hero h1 {
+  font-size: 2.2rem;
+  line-height: 1.1;
+  margin: 0 0 0.8rem;
+}
+
+.hero-copy {
+  font-size: 1.05rem;
+  max-width: 48rem;
+}
+
+.eyebrow {
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin: 0 0 0.4rem;
+  text-transform: uppercase;
+}
+
+.button-link {
+  background: #0f172a;
+  border: 1px solid #0f172a;
+  border-radius: 6px;
+  color: #ffffff;
+  display: inline-flex;
+  font-weight: 700;
+  padding: 0.55rem 0.8rem;
+  text-decoration: none;
+}
+
+.button-link.secondary {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.button-link.full {
+  justify-content: center;
+  width: calc(100% - 1.6rem);
+}
+
+.status-pill {
+  background: #e0f2fe;
+  border: 1px solid #7dd3fc;
+  border-radius: 999px;
+  color: #075985;
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.18rem 0.5rem;
+}
+
+.workflow-strip,
+.case-gallery,
+.routing-board,
+.chart-grid,
+.proof-grid {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.workflow-strip {
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+}
+
+.workflow-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #0f172a;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-height: 9rem;
+  padding: 0.85rem;
+  text-decoration: none;
+}
+
+.workflow-card:hover,
+.timeline-link:hover {
+  border-color: #0f766e;
+}
+
+.step-icon {
+  align-items: center;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 50%;
+  color: #92400e;
+  display: inline-flex;
+  font-weight: 700;
+  height: 1.8rem;
+  justify-content: center;
+  width: 1.8rem;
+}
+
+.case-gallery {
+  grid-template-columns: minmax(280px, 1.4fr) repeat(2, minmax(220px, 0.8fr));
+}
+
+.gallery-card.featured {
+  border-color: #0f766e;
+}
+
+.gallery-card.muted {
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.guided-shell {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: 230px minmax(0, 1fr) 280px;
+  align-items: start;
+}
+
+.guided-timeline,
+.case-summary-panel {
+  position: sticky;
+  top: 0.8rem;
+}
+
+.back-link {
+  color: #0f766e;
+  display: inline-flex;
+  font-weight: 700;
+  margin-bottom: 0.7rem;
+  text-decoration: none;
+}
+
+.timeline-link {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #0f172a;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 2.5rem 1fr;
+  margin-bottom: 0.5rem;
+  padding: 0.55rem;
+  text-decoration: none;
+}
+
+.timeline-link.active {
+  background: #ecfdf5;
+  border-color: #0f766e;
+}
+
+.timeline-link small {
+  color: #64748b;
+  display: block;
+  margin-top: 0.15rem;
+}
+
+.timeline-check {
+  align-items: center;
+  background: #dcfce7;
+  border-radius: 6px;
+  color: #166534;
+  display: inline-flex;
+  font-size: 0.68rem;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 2rem;
+}
+
+.step-head {
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.8rem;
+}
+
+.step-head h1 {
+  margin: 0 0 0.35rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.tabs a {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  color: #0f172a;
+  padding: 0.42rem 0.65rem;
+  text-decoration: none;
+}
+
+.tabs a.active {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.document-stack {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.pdf-page {
+  background: #fff;
+  border: 1px solid #94a3b8;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  margin: 0 auto;
+  max-width: 720px;
+  min-height: 18rem;
+  padding: 1.4rem;
+  width: calc(100% - 2.8rem);
+}
+
+.pdf-meta {
+  color: #64748b;
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+mark {
+  background: #fef08a;
+  border-radius: 3px;
+  padding: 0.05rem 0.16rem;
+}
+
+.json-panel {
+  background: #111827;
+  border-radius: 8px;
+  color: #e5e7eb;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.decision-grid {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.big-callout {
+  color: #0f766e;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.routing-board {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 0.9rem;
+}
+
+.route-column {
+  background: #fcfcfd;
+}
+
+.metric-card span,
+.metric-card strong {
+  display: block;
+}
+
+.metric-card strong {
+  color: #0f766e;
+  font-size: 1.45rem;
+  margin-top: 0.25rem;
+}
+
+.chart-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.bar-row {
+  align-items: center;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(110px, 1fr) minmax(90px, 1fr) 2.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.bar-row div {
+  background: #e2e8f0;
+  border-radius: 999px;
+  height: 0.55rem;
+  overflow: hidden;
+}
+
+.bar-row i {
+  background: #0f766e;
+  display: block;
+  height: 100%;
+}
+
+.architecture-flow {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  margin-bottom: 0.9rem;
+}
+
+.architecture-flow article {
+  min-height: 6rem;
+}
+
+.architecture-flow span,
+.deploy-flow span {
+  display: block;
+  margin-top: 0.35rem;
+}
+
+.deploy-flow {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.deploy-flow span {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.55rem;
+}
+
+.proof-grid {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+@media (max-width: 980px) {
+  .demo-hero,
+  .case-gallery,
+  .guided-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .guided-timeline,
+  .case-summary-panel {
+    position: static;
+  }
+}

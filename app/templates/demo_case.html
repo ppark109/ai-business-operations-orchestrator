@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="guided-shell">
+  <aside class="guided-timeline">
+    <a class="back-link" href="/demo/cases">Case gallery</a>
+    <h2>Workflow</h2>
+    {% for item in steps %}
+      <a class="timeline-link {% if item.id == active_step %}active{% endif %}" href="/demo/cases/{{ demo_case.case_id }}?step={{ item.id }}">
+        <span class="timeline-check">Done</span>
+        <span>
+          <strong>{{ loop.index }}. {{ item.label }}</strong>
+          <small>{{ item.badge }}</small>
+        </span>
+      </a>
+    {% endfor %}
+  </aside>
+
+  <section class="guided-main">
+    {% if active_step in ["documents", "extraction"] %}
+      <div class="step-head">
+        <p class="eyebrow">Step {{ "1" if active_step == "documents" else "2" }}</p>
+        <h1>{{ "Input Documents" if active_step == "documents" else "Extracted Text" }}</h1>
+        <p>Source materials are shown with operational facts that later drive AI and workflow decisions.</p>
+      </div>
+      <nav class="tabs">
+        <a class="{% if active_tab == 'source' %}active{% endif %}" href="/demo/cases/{{ demo_case.case_id }}?step={{ active_step }}&tab=source">Source Document</a>
+        <a class="{% if active_tab == 'extracted' %}active{% endif %}" href="/demo/cases/{{ demo_case.case_id }}?step={{ active_step }}&tab=extracted">Extracted Text</a>
+        <a class="{% if active_tab == 'metadata' %}active{% endif %}" href="/demo/cases/{{ demo_case.case_id }}?step={{ active_step }}&tab=metadata">Metadata</a>
+      </nav>
+      {% if active_tab == "source" %}
+        <div class="document-stack">
+          {% for doc in documents %}
+            <article class="pdf-page">
+              <div class="pdf-meta">{{ doc.page_label }}</div>
+              <h2>{{ doc.title }}</h2>
+              <p>{{ doc.summary }}</p>
+              <h3>Highlighted evidence</h3>
+              {% for phrase in doc.highlights %}
+                <p><mark>{{ phrase }}</mark></p>
+              {% endfor %}
+            </article>
+          {% endfor %}
+        </div>
+      {% elif active_tab == "extracted" %}
+        <pre class="json-panel">{{ extracted_fields | tojson(indent=2) }}</pre>
+      {% else %}
+        <section class="card">
+          <h2>Document metadata</h2>
+          <ul class="kv">
+            {% for label, value in metadata_rows %}
+              <li><span>{{ label }}</span><span>{{ value }}</span></li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% endif %}
+
+    {% elif active_step == "ai-decision" %}
+      <div class="step-head">
+        <p class="eyebrow">Step 3</p>
+        <h1>AI Decision Record</h1>
+        <p>The AI recommendation is a structured decision record, not a chat transcript.</p>
+      </div>
+      <section class="decision-grid">
+        <article class="card">
+          <h2>AI Recommendation</h2>
+          <p class="big-callout">{{ demo_case.ai_recommendation }}</p>
+          <p>Proceed to department review before committing full proposal resources.</p>
+        </article>
+        <article class="card">
+          <h2>Risk Assessment</h2>
+          <p>Risk level: <strong>{{ demo_case.risk_level }}</strong></p>
+          <ul>
+            {% for lane in demo_case.specialist_lanes %}
+              <li>{{ lane.department }}: {{ lane.expected_risks|join(", ") }}</li>
+            {% endfor %}
+          </ul>
+        </article>
+        <article class="card">
+          <h2>Confidence / Review Requirement</h2>
+          <p class="big-callout">84%</p>
+          <p>Human review is required because contractual, security, finance, and delivery conditions affect bid commitment.</p>
+        </article>
+      </section>
+      <section class="card">
+        <h2>Evidence Used</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Evidence</th><th>Source</th><th>Impact</th><th></th></tr></thead>
+            <tbody>
+              {% for ev in demo_case.expected_evidence %}
+                <tr>
+                  <td>{{ ev.extracted_fact }}</td>
+                  <td>{{ ev.source_document }}</td>
+                  <td>{{ ev.downstream_use }}</td>
+                  <td><a href="/demo/cases/{{ demo_case.case_id }}?step=documents&tab=source">View source</a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    {% elif active_step == "routing" %}
+      <div class="step-head">
+        <p class="eyebrow">Step 4</p>
+        <h1>Department Routing Board</h1>
+        <p>AI turns one messy intake packet into targeted work for specialist review lanes.</p>
+      </div>
+      <section class="routing-board">
+        {% for packet in demo_case.department_packets %}
+          <article class="route-column">
+            <span class="status-pill">{{ packet.packet_status }}</span>
+            <h2>{{ packet.department }}</h2>
+            <p><strong>Action needed:</strong> {{ packet.action_needed }}</p>
+            <h3>Key information</h3>
+            <ul>
+              {% for item in packet.key_information %}
+                <li>{{ item }}</li>
+              {% endfor %}
+            </ul>
+            <p><strong>AI-generated task:</strong> {{ packet.ai_generated_task }}</p>
+          </article>
+        {% endfor %}
+      </section>
+      <section class="card">
+        <h2>Routing logic</h2>
+        <ul>
+          {% for lane in demo_case.specialist_lanes %}
+            <li>{{ lane.department }} triggered because {{ lane.expected_risks|join(", ") }} were detected.</li>
+          {% endfor %}
+        </ul>
+      </section>
+
+    {% elif active_step == "human-review" %}
+      <div class="step-head">
+        <p class="eyebrow">Step 5</p>
+        <h1>Human Review Queue</h1>
+        <p>Specialists review AI-prepared packets and return structured conclusions.</p>
+      </div>
+      <section class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Department</th><th>Reviewer</th><th>Status</th><th>Decision</th></tr></thead>
+            <tbody>
+              {% for review in demo_case.specialist_conclusions %}
+                <tr>
+                  <td>{{ review.department }}</td>
+                  <td>{{ review.reviewer_role }}</td>
+                  <td>{{ review.status }}</td>
+                  <td>
+                    <details>
+                      <summary>{{ review.decision }}</summary>
+                      <p><strong>Reviewer note:</strong> {{ review.note }}</p>
+                      <p><strong>Result:</strong> {{ review.result }}</p>
+                    </details>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    {% elif active_step == "final-decision" %}
+      <div class="step-head">
+        <p class="eyebrow">Step 6</p>
+        <h1>Final BD/Ops Decision Record</h1>
+        <p>AI synthesis recommends; BD/Ops owns the business decision.</p>
+      </div>
+      <section class="decision-grid">
+        <article class="card">
+          <h2>AI Synthesis</h2>
+          <p class="big-callout">{{ demo_case.ai_synthesis.recommendation }}</p>
+          <p>{{ demo_case.ai_synthesis.summary }}</p>
+        </article>
+        <article class="card">
+          <h2>BD/Ops Decision</h2>
+          <p class="big-callout">{{ demo_case.expected_bd_ops_decision.decision }}</p>
+          <p>{{ demo_case.expected_bd_ops_decision.owner_note }}</p>
+        </article>
+      </section>
+      <section class="card">
+        <h2>Approved next steps</h2>
+        <ol>
+          {% for step in demo_case.expected_bd_ops_decision.approved_next_steps %}
+            <li>{{ step }}</li>
+          {% endfor %}
+        </ol>
+      </section>
+
+    {% else %}
+      <div class="step-head">
+        <p class="eyebrow">Step 7</p>
+        <h1>KPI Dashboard</h1>
+        <p>Seeded/precomputed demo metrics show the operational value of the workflow.</p>
+      </div>
+      <section class="grid">
+        {% for label, value in kpi_cards %}
+          <article class="metric-card">
+            <span>{{ label }}</span>
+            <strong>{{ value }}</strong>
+          </article>
+        {% endfor %}
+      </section>
+      <section class="chart-grid">
+        {% for chart in charts %}
+          <article class="card">
+            <h2>{{ chart.title }}</h2>
+            {% for label, value in chart.rows %}
+              <div class="bar-row">
+                <span>{{ label }}</span>
+                <div><i style="width: {{ value }}%;"></i></div>
+                <strong>{{ value }}</strong>
+              </div>
+            {% endfor %}
+          </article>
+        {% endfor %}
+      </section>
+    {% endif %}
+  </section>
+
+  <aside class="case-summary-panel">
+    <span class="status-pill">{{ demo_case.status }}</span>
+    <h2>{{ demo_case.title }}</h2>
+    <ul class="kv">
+      <li><span>Case ID</span><span>{{ demo_case.case_id }}</span></li>
+      <li><span>Input</span><span>{{ demo_case.input_type }}</span></li>
+      <li><span>AI recommendation</span><span>{{ demo_case.ai_recommendation }}</span></li>
+      <li><span>Risk level</span><span>{{ demo_case.risk_level }}</span></li>
+      <li><span>Primary route</span><span>{{ demo_case.primary_route }}</span></li>
+      <li><span>Decision owner</span><span>{{ demo_case.decision_owner }}</span></li>
+      <li><span>Final decision</span><span>{{ demo_case.final_decision }}</span></li>
+    </ul>
+    <a class="button-link secondary full" href="/demo/architecture">Architecture</a>
+  </aside>
+</section>
+{% endblock %}

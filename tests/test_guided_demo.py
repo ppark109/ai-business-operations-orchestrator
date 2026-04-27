@@ -1,4 +1,7 @@
+from fastapi.testclient import TestClient
+
 from app.guided_demo import load_guided_demo_case, validate_guided_demo_case
+from app.main import create_app
 
 
 def test_guided_demo_case_has_specialist_packets_and_bd_ops_decision() -> None:
@@ -31,3 +34,31 @@ def test_guided_demo_evidence_references_are_resolvable() -> None:
 
     assert case.referenced_evidence_ids()
     assert case.referenced_evidence_ids() <= evidence_ids
+
+
+def test_guided_demo_public_pages_render() -> None:
+    client = TestClient(create_app())
+    case = load_guided_demo_case()
+
+    for path in [
+        "/demo",
+        "/demo/cases",
+        f"/demo/cases/{case.case_id}",
+        f"/demo/cases/{case.case_id}?step=ai-decision",
+        f"/demo/cases/{case.case_id}?step=routing",
+        f"/demo/cases/{case.case_id}?step=human-review",
+        f"/demo/cases/{case.case_id}?step=final-decision",
+        f"/demo/cases/{case.case_id}?step=kpis",
+        "/demo/architecture",
+    ]:
+        response = client.get(path)
+        assert response.status_code == 200
+        assert "State Benefits Portal Modernization RFP" in response.text or "How the system is built" in response.text
+
+
+def test_guided_demo_unknown_case_returns_404() -> None:
+    client = TestClient(create_app())
+
+    response = client.get("/demo/cases/not-a-real-case")
+
+    assert response.status_code == 404

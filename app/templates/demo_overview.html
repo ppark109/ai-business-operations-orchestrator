@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="demo-hero">
+  <div>
+    <p class="eyebrow">Guided read-only showcase</p>
+    <h1>AI Business Operations Orchestrator</h1>
+    <p class="hero-copy">
+      A workflow system that ingests contracts, emails, and business documents; uses AI to make structured
+      recommendations; routes department-specific action packets; supports human review; and tracks KPIs.
+    </p>
+    <div class="actions">
+      <a class="button-link" href="/demo/cases/{{ demo_case.case_id }}">View Guided Demo</a>
+      <a class="button-link secondary" href="/demo/architecture">View Architecture</a>
+    </div>
+  </div>
+  <aside class="hero-summary">
+    <span class="status-pill">Precomputed demo data</span>
+    <h2>{{ demo_case.title }}</h2>
+    <p>{{ demo_case.summary }}</p>
+  </aside>
+</section>
+
+<section class="workflow-strip" aria-label="Guided demo workflow">
+  {% for step in overview_flow %}
+    <a class="workflow-card" href="/demo/cases/{{ demo_case.case_id }}?step={{ step.id }}">
+      <span class="step-icon">{{ loop.index }}</span>
+      <span class="status-pill">{{ step.badge }}</span>
+      <strong>{{ step.short_label }}</strong>
+      <span>{{ step.description }}</span>
+    </a>
+  {% endfor %}
+</section>
+{% endblock %}
