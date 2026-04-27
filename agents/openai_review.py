@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import time
 from typing import Any
 
@@ -7,6 +8,14 @@ from pydantic import BaseModel, Field
 
 from agents.base import build_trace
 from schemas.case import EvidenceSpan, Finding, IntakePackage, Route, Severity, TraceRecord
+
+SYSTEM_PROMPT = (
+    "You are an AI commercial operations reviewer. Extract grounded evidence and "
+    "business risk findings from synthetic intake documents. Every evidence.quote "
+    "must be copied as an exact, contiguous substring from the named document. Do "
+    "not paraphrase quotes, summarize quotes, combine text from multiple places, or "
+    "invent wording. If a finding cannot be supported by an exact quote, omit it."
+)
 
 
 class AIReviewEvidence(BaseModel):
@@ -59,11 +68,7 @@ class OpenAIReviewAgent:
             input=[
                 {
                     "role": "system",
-                    "content": (
-                        "You are an AI commercial operations reviewer. Extract grounded evidence "
-                        "and business risk findings from synthetic intake documents. Return only "
-                        "findings supported by exact quotes from the provided documents."
-                    ),
+                    "content": SYSTEM_PROMPT,
                 },
                 {
                     "role": "user",
@@ -91,7 +96,7 @@ class OpenAIReviewAgent:
             )
             for item in parsed.evidence
         ]
-        _validate_quotes_grounded(evidence, payload)
+        evidence = _ground_evidence_quotes(evidence, payload)
 
         findings = [
             Finding(
@@ -150,12 +155,67 @@ def _format_documents(payload: IntakePackage) -> str:
     )
 
 
-def _validate_quotes_grounded(evidence: list[EvidenceSpan], payload: IntakePackage) -> None:
-    text_by_type = {document_type: text.lower() for document_type, text in _document_texts(payload)}
+def _ground_evidence_quotes(evidence: list[EvidenceSpan], payload: IntakePackage) -> list[EvidenceSpan]:
+    text_by_type = {document_type: text for document_type, text in _document_texts(payload)}
+    grounded: list[EvidenceSpan] = []
     for item in evidence:
         source_text = text_by_type.get(item.source_document_type, "")
-        if item.quote.strip().lower() not in source_text:
+        if _contains_quote(source_text, item.quote):
+            grounded.append(item)
+            continue
+        replacement = _best_source_sentence(
+            source_text,
+            search_text=f"{item.quote} {item.normalized_fact}",
+        )
+        if replacement is None:
             raise ValueError(f"AI evidence quote is not grounded: {item.normalized_fact}")
+        grounded.append(item.model_copy(update={"quote": replacement}))
+    return grounded
+
+
+def _contains_quote(source_text: str, quote: str) -> bool:
+    return _normalize_text(quote) in _normalize_text(source_text)
+
+
+def _best_source_sentence(source_text: str, search_text: str) -> str | None:
+    terms = _search_terms(search_text)
+    if not terms:
+        return None
+
+    best_sentence = ""
+    best_score = 0
+    for sentence in _source_sentences(source_text):
+        sentence_terms = set(_search_terms(sentence))
+        score = len(terms.intersection(sentence_terms))
+        if score > best_score:
+            best_score = score
+            best_sentence = sentence
+
+    minimum_score = 2 if len(terms) >= 2 else 1
+    if best_score < minimum_score:
+        return None
+    return best_sentence
+
+
+def _source_sentences(source_text: str) -> list[str]:
+    normalized = re.sub(r"\s+", " ", source_text).strip()
+    return [
+        sentence.strip()
+        for sentence in re.split(r"(?<=[.!?])\s+", normalized)
+        if sentence.strip()
+    ]
+
+
+def _search_terms(text: str) -> set[str]:
+    return {
+        term
+        for term in re.findall(r"\d+%?|[a-zA-Z][a-zA-Z_'-]{2,}", text.lower())
+        if term not in {"the", "and", "for", "that", "with", "from", "this", "will", "are", "has"}
+    }
+
+
+def _normalize_text(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip().lower()
 
 
 def _evidence_for_quotes(
@@ -165,8 +225,24 @@ def _evidence_for_quotes(
     if not quotes:
         return []
     quote_set = {quote.strip().lower() for quote in quotes}
-    return [
+    selected = [
         item
         for item in evidence
         if item.quote.strip().lower() in quote_set
     ]
+    if selected:
+        return selected
+
+    for quote in quotes:
+        quote_terms = _search_terms(quote)
+        best_item = None
+        best_score = 0
+        for item in evidence:
+            item_terms = _search_terms(f"{item.quote} {item.normalized_fact}")
+            score = len(quote_terms.intersection(item_terms))
+            if score > best_score:
+                best_score = score
+                best_item = item
+        if best_item is not None and best_score >= 2 and best_item not in selected:
+            selected.append(best_item)
+    return selected
